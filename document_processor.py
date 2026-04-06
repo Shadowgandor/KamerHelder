@@ -10,7 +10,7 @@ import time
 
 # For text extraction
 try:
-    import PyPDF2
+    import pypdf
     PDF_AVAILABLE = True
 except ImportError:
     PDF_AVAILABLE = False
@@ -176,65 +176,68 @@ class DocumentProcessor:
     def extract_text_from_pdf(self, pdf_content: bytes) -> Optional[str]:
         """Extract text from PDF content"""
         if not PDF_AVAILABLE:
-            print("PyPDF2 not available. Install with: pip install PyPDF2")
+            print("pypdf not available. Install with: pip install pypdf")
             return None
-        
+
+        tmp_path = None
         try:
-            with tempfile.NamedTemporaryFile() as temp_file:
+            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temp_file:
+                tmp_path = temp_file.name
                 temp_file.write(pdf_content)
-                temp_file.flush()
-                
-                with open(temp_file.name, 'rb') as file:
-                    pdf_reader = PyPDF2.PdfReader(file)
-                    text = ""
-                    
-                    for page in pdf_reader.pages:
-                        text += page.extract_text() + "\n"
-                    
-                    return text.strip()
+
+            reader = pypdf.PdfReader(tmp_path)
+            text = "\n".join(page.extract_text() or "" for page in reader.pages)
+            return text.strip()
         except Exception as e:
             print(f"Error extracting PDF text: {e}")
             return None
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
     
     def extract_text_from_docx(self, docx_content: bytes) -> Optional[str]:
         """Extract text from DOCX content"""
         if not DOCX_AVAILABLE:
             print("python-docx not available. Install with: pip install python-docx")
             return None
-        
+
+        tmp_path = None
         try:
-            with tempfile.NamedTemporaryFile() as temp_file:
+            with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as temp_file:
+                tmp_path = temp_file.name
                 temp_file.write(docx_content)
-                temp_file.flush()
-                
-                doc = DocxDocument(temp_file.name)
-                text = ""
-                
-                for paragraph in doc.paragraphs:
-                    text += paragraph.text + "\n"
-                
-                return text.strip()
+
+            doc = DocxDocument(tmp_path)
+            text = "\n".join(p.text for p in doc.paragraphs)
+            return text.strip()
         except Exception as e:
             print(f"Error extracting DOCX text: {e}")
             return None
-    
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+
     def extract_text_from_doc(self, doc_content: bytes) -> Optional[str]:
         """Extract text from DOC content using mammoth"""
         if not MAMMOTH_AVAILABLE:
             print("mammoth not available. Install with: pip install mammoth")
             return None
-        
+
+        tmp_path = None
         try:
-            with tempfile.NamedTemporaryFile() as temp_file:
+            with tempfile.NamedTemporaryFile(suffix=".doc", delete=False) as temp_file:
+                tmp_path = temp_file.name
                 temp_file.write(doc_content)
-                temp_file.flush()
-                
-                with open(temp_file.name, 'rb') as file:
-                    result = mammoth.extract_raw_text(file)
-                    return result.value.strip()
+
+            with open(tmp_path, 'rb') as file:
+                result = mammoth.extract_raw_text(file)
+                return result.value.strip()
         except Exception as e:
             print(f"Error extracting DOC text: {e}")
             return None
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
     
     def detect_content_type(self, content: bytes) -> str:
         """Detect the content type of the document"""
@@ -359,44 +362,41 @@ def main():
         print(f"Found {len(plenaire_verslagen)} plenaire verslagen to process")
         
         processor = DocumentProcessor()
-        processed_verslagen = []  # Initialize early to avoid UnboundLocalError
+        processed_verslagen = []
         successful_count = 0
         failed_count = 0
-        
-        # Process ALL verslagen
-        for i, verslag in enumerate(plenaire_verslagen):
+        MAX_WORKERS = 4
+
+        def process_one(args):
+            i, verslag = args
             print(f"\n--- Processing {i+1}/{len(plenaire_verslagen)} ---")
-            
             try:
-                processed_verslag = processor.process_verslag_with_content(verslag.copy())
-                processed_verslagen.append(processed_verslag)
-                
-                if processed_verslag.get('content_extracted', False):
-                    successful_count += 1
-                    print("✓ SUCCESS")
-                else:
-                    failed_count += 1
-                    print("✗ FAILED")
-                
-                # Add a small delay to be respectful to the API
-                time.sleep(1)
-                
-                # Save progress every 10 items (in case of interruption)
-                if (i + 1) % 10 == 0:
-                    print(f"\n--- Saving progress ({i+1}/{len(plenaire_verslagen)}) ---")
-                    save_to_json(processed_verslagen, f"verslagen_with_content_progress_{i+1}.json")
-                
+                result = processor.process_verslag_with_content(verslag.copy())
+                status = "✓ SUCCESS" if result.get('content_extracted') else "✗ FAILED"
+                print(status)
+                return result
             except Exception as e:
                 print(f"✗ ERROR processing verslag {verslag.get('id', 'Unknown')}: {e}")
-                # Add the verslag with error info
                 verslag_copy = verslag.copy()
                 verslag_copy['content_extracted'] = False
                 verslag_copy['error'] = str(e)
-                processed_verslagen.append(verslag_copy)
-                failed_count += 1
-                
-                # Continue with next verslag
-                continue
+                return verslag_copy
+
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            futures = {executor.submit(process_one, (i, v)): i
+                       for i, v in enumerate(plenaire_verslagen)}
+            for future in as_completed(futures):
+                result = future.result()
+                processed_verslagen.append(result)
+                if result.get('content_extracted'):
+                    successful_count += 1
+                else:
+                    failed_count += 1
+
+                # Save progress every 10 completed items
+                if len(processed_verslagen) % 10 == 0:
+                    print(f"\n--- Saving progress ({len(processed_verslagen)}/{len(plenaire_verslagen)}) ---")
+                    save_to_json(processed_verslagen, f"verslagen_with_content_progress_{len(processed_verslagen)}.json")
         
         # Save final results
         save_to_json(processed_verslagen, "verslagen_with_content.json")

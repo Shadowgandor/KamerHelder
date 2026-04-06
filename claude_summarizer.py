@@ -32,6 +32,7 @@ class ParliamentarySummarizer:
             raise ValueError("Anthropic API key required. Set ANTHROPIC_API_KEY environment variable or pass api_key parameter")
         
         self.client = anthropic.Anthropic(api_key=api_key)
+        self.model = "claude-haiku-4-5-20251001"
         self.max_chunk_size = 50000  # Characters per chunk (roughly 12-15k tokens)
     
     def identify_speakers_and_parties(self, text: str, verslag_data: Dict = None) -> Dict[str, str]:
@@ -246,13 +247,13 @@ class ParliamentarySummarizer:
         }}
 
         Text to analyze:
-        {chunk.text[:3000]}...
+        {chunk.text}
         """
-        
+
         for attempt in range(max_retries + 1):
             try:
                 response = self.client.messages.create(
-                    model="claude-3-haiku-20240307",
+                    model=self.model,
                     max_tokens=1500,
                     messages=[{"role": "user", "content": prompt}]
                 )
@@ -401,13 +402,18 @@ class ParliamentarySummarizer:
     """
         
         try:
-            response = self.client.messages.create(
-                model="claude-3-haiku-20240307",
+            print("  Streaming final synthesis...")
+            response_text = ""
+            with self.client.messages.stream(
+                model=self.model,
                 max_tokens=3000,
                 messages=[{"role": "user", "content": synthesis_prompt}]
-            )
-            
-            response_text = response.content[0].text.strip()
+            ) as stream:
+                for text in stream.text_stream:
+                    response_text += text
+                    print(".", end="", flush=True)
+            print()
+            response_text = response_text.strip()
             response_text = response_text.replace('```json', '').replace('```', '').strip()
             
             # Extract JSON part
@@ -513,9 +519,9 @@ class ParliamentarySummarizer:
         if json_text.count('[') > json_text.count(']'):
             json_text += ']' * (json_text.count('[') - json_text.count(']'))
         
-        # Fix missing quotes around keys (common issue)
-        json_text = re.sub(r'(\w+):', r'"\1":', json_text)
-        
+        # Fix unquoted keys — only match keys not already wrapped in quotes
+        json_text = re.sub(r'(?<!["\w])(\w+):', r'"\1":', json_text)
+
         return json_text
     
     def get_relevant_speakers(self, chunk_text: str, speakers_map: Dict[str, str]) -> Dict[str, str]:

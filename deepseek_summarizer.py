@@ -74,7 +74,7 @@ class DeepSeekParliamentarySummarizer:
         self._rate_limit()
         
         payload = {
-            "model": "deepseek-chat",
+            "model": "deepseek-reasoner",
             "messages": messages,
             "max_tokens": max_tokens,
             "temperature": temperature,
@@ -92,7 +92,10 @@ class DeepSeekParliamentarySummarizer:
                 response.raise_for_status()
                 
                 result = response.json()
-                return result['choices'][0]['message']['content']
+                content = result['choices'][0]['message']['content']
+                # Strip reasoning blocks that deepseek-reasoner may include in content
+                content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
+                return content
                 
             except requests.exceptions.RequestException as e:
                 if attempt < max_retries:
@@ -300,9 +303,9 @@ class DeepSeekParliamentarySummarizer:
         if json_text.count('[') > json_text.count(']'):
             json_text += ']' * (json_text.count('[') - json_text.count(']'))
         
-        # Fix missing quotes around keys
-        json_text = re.sub(r'(\w+):', r'"\1":', json_text)
-        
+        # Fix unquoted keys — only match keys not already wrapped in quotes
+        json_text = re.sub(r'(?<!["\w])(\w+):', r'"\1":', json_text)
+
         return json_text
     
     def summarize_chunk(self, chunk: ChunkInfo, speakers_map: Dict[str, str], 
@@ -427,9 +430,9 @@ class DeepSeekParliamentarySummarizer:
         - Empty fact_check_flags array is perfectly acceptable
 
         Text to analyze:
-        {chunk.text[:3000]}...
+        {chunk.text}
         """
-        
+
         messages = [{"role": "user", "content": prompt}]
         
         for attempt in range(max_retries + 1):
@@ -652,7 +655,7 @@ class DeepSeekParliamentarySummarizer:
                 'total_topics_found': len(all_topics),
                 'total_fact_checks': len(all_fact_checks),
                 'processing_date': datetime.now().isoformat(),
-                'ai_model': 'deepseek-reasoner',
+                'ai_model': 'deepseek-reasoner',  # deepseek-reasoner (R1)
                 'fact_checking_enabled': True
             }
             

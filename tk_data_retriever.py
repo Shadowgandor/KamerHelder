@@ -205,12 +205,6 @@ class TweedeKamerDataRetriever:
             type_filtered_count = 0
             
             for verslag in verslagen:
-                # Debug: Print first few verslag dates to understand the data
-                if len(processed_verslagen) < 5:
-                    vergadering = verslag.vergadering if hasattr(verslag, 'vergadering') else None
-                    verg_datum = vergadering.datum if vergadering and hasattr(vergadering, 'datum') else None
-                    print(f"Debug - Verslag {verslag.id}: verslag_datum={getattr(verslag, 'datum', None)}, vergadering_datum={verg_datum}, soort={getattr(verslag, 'soort', None)}")
-                
                 vergadering = verslag.vergadering if hasattr(verslag, 'vergadering') else None
                 
                 # Apply date filtering client-side - prioritize vergadering datum since verslag datum is often None
@@ -225,21 +219,14 @@ class TweedeKamerDataRetriever:
                     # Handle both datetime and date objects
                     if hasattr(date_to_check, 'date'):
                         date_to_check = date_to_check.date()
-                    
+
                     if date_to_check < start_date.date() or date_to_check > end_date.date():
                         date_filtered_count += 1
-                        if len(processed_verslagen) < 3:  # Debug first few
-                            print(f"Date filtered: {date_to_check} not in range {start_date.date()} to {end_date.date()}")
                         continue
-                else:
-                    # No date info available - include it anyway for now
-                    print(f"Warning: No date info for verslag {verslag.id}, including anyway")
-                
+
                 # Apply client-side filtering
                 if not self._should_include_verslag(verslag):
                     type_filtered_count += 1
-                    if len(processed_verslagen) < 3:  # Debug first few
-                        print(f"Type filtered: soort={getattr(verslag, 'soort', None)}, status={getattr(verslag, 'status', None)}")
                     continue
                 
                 # Use vergadering datum if verslag datum is missing
