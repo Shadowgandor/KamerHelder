@@ -7,7 +7,8 @@
       "Bash(/Users/gerdjanvanhagen/git/KamerHelder/venv/bin/pip list:*)",
       "Bash(venv/bin/pip install:*)",
       "Bash(pip3 install:*)",
-      "Bash(pip3 show:*)"
+      "Bash(pip3 show:*)",
+      "Bash(python3:*)"
     ]
   }
 }

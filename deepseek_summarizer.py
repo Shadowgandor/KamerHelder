@@ -437,7 +437,7 @@ class DeepSeekParliamentarySummarizer:
         
         for attempt in range(max_retries + 1):
             try:
-                response_text = self.make_api_request(messages, max_tokens=2000)
+                response_text = self.make_api_request(messages, max_tokens=4000)
                 
                 if not response_text:
                     raise ValueError("Empty response from DeepSeek")

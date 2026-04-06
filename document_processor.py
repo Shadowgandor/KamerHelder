@@ -7,6 +7,7 @@ from typing import List, Dict, Optional
 import tempfile
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # For text extraction
 try:
@@ -349,7 +350,7 @@ def main():
     
     # Check what text extraction libraries are available
     print("Available text extraction libraries:")
-    print(f"  - PyPDF2 (PDF): {'✓' if PDF_AVAILABLE else '✗ (install with: pip install PyPDF2)'}")
+    print(f"  - pypdf (PDF): {'✓' if PDF_AVAILABLE else '✗ (install with: pip install pypdf)'}")
     print(f"  - python-docx (DOCX): {'✓' if DOCX_AVAILABLE else '✗ (install with: pip install python-docx)'}")
     print(f"  - mammoth (DOC): {'✓' if MAMMOTH_AVAILABLE else '✗ (install with: pip install mammoth)'}")
     print()
