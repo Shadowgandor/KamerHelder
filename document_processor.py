@@ -98,80 +98,24 @@ class DocumentProcessor:
 
     def get_document_content(self, verslag_id: str) -> Optional[bytes]:
         """
-        Download the raw document content for a verslag
-        
-        Args:
-            verslag_id: ID of the verslag
-            
-        Returns:
-            Raw document bytes or None
+        Download the raw document content for a verslag.
+
+        Tries the known resource URL pattern directly, avoiding the need to
+        search through a paginated list of verslagen.
         """
+        base = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0"
+        url = f"{base}/Verslag({verslag_id})/TK.DA.GGM.OData.Resource()"
+
         try:
-            # First, let's explore the structure
-            verslag = self.explore_verslag_structure(verslag_id)
-            if not verslag:
-                return None
-            
-            # Try different ways to get the document URL
-            document_url = None
-            
-            # Method 1: Direct resource URL
-            if hasattr(verslag, 'get_resource_url_or_none'):
-                try:
-                    document_url = verslag.get_resource_url_or_none()
-                    print(f"Method 1 - Direct resource URL: {document_url}")
-                except Exception as e:
-                    print(f"Method 1 failed: {e}")
-            
-            # Method 2: Through URL property
-            if not document_url and hasattr(verslag, 'url'):
-                try:
-                    base_url = verslag.url
-                    if base_url:
-                        # Try appending /resource to the base URL
-                        document_url = base_url + '/resource'
-                        print(f"Method 2 - URL + /resource: {document_url}")
-                except Exception as e:
-                    print(f"Method 2 failed: {e}")
-            
-            # Method 3: Through related documents
-            if not document_url and hasattr(verslag, 'related_items'):
-                try:
-                    documents = verslag.related_items('Document')
-                    if documents:
-                        document = documents[0]
-                        if hasattr(document, 'get_resource_url_or_none'):
-                            document_url = document.get_resource_url_or_none()
-                            print(f"Method 3 - Related document URL: {document_url}")
-                except Exception as e:
-                    print(f"Method 3 failed: {e}")
-            
-            # Method 4: Try direct API URL construction
-            if not document_url:
-                # Construct URL based on tkapi patterns
-                base_api_url = "https://opendata.tweedekamer.nl/v4/2.0"
-                document_url = f"{base_api_url}/Verslag('{verslag_id}')/resource"
-                print(f"Method 4 - Direct API construction: {document_url}")
-            
-            if document_url:
-                print(f"Attempting to download from: {document_url}")
-                response = self.session.get(document_url)
-                
-                if response.status_code == 200:
-                    print(f"Successfully downloaded {len(response.content)} bytes")
-                    return response.content
-                else:
-                    print(f"Download failed with status code: {response.status_code}")
-                    print(f"Response: {response.text[:200]}")
-                    return None
+            response = self.session.get(url, timeout=60)
+            if response.status_code == 200:
+                print(f"Successfully downloaded {len(response.content)} bytes")
+                return response.content
             else:
-                print(f"No document URL found for verslag {verslag_id}")
+                print(f"Download failed with status code: {response.status_code}")
                 return None
-                
         except Exception as e:
             print(f"Error downloading document for {verslag_id}: {e}")
-            import traceback
-            traceback.print_exc()
             return None
     
     def extract_text_from_pdf(self, pdf_content: bytes) -> Optional[str]:
