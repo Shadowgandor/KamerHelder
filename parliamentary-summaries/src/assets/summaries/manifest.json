@@ -1,0 +1,24 @@
+{
+  "generated": "2025-06-14T15:17:52.800Z",
+  "files": [
+    "deepseek_summary_3ccb2ed3-4471-4f9f-9497-151984f8af3e.json",
+    "deepseek_summary_410b5ae3-6434-4ace-bb2c-a711636310d6.json",
+    "deepseek_summary_4ac8d262-c110-4ab7-bd71-b280def4c9f7.json",
+    "deepseek_summary_7f1a3c26-13b1-48bf-aa88-d6b3a7555754.json",
+    "deepseek_summary_84d94edd-499f-4d88-9e06-c5c0cd71b1c4.json",
+    "deepseek_summary_b0b0ff08-3332-40c2-b50d-f069fb73de1b.json",
+    "deepseek_summary_c9b82c24-e76e-475a-9747-1a34fa5a7971.json",
+    "deepseek_summary_cf11ca27-d605-4793-9285-7c95ae7d2cd2.json",
+    "deepseek_summary_f09ab5af-04bd-4217-b8da-ad74a4e097ef.json",
+    "deepseek_summary_f73ff853-5f46-4227-beca-e22070f6ceb7.json",
+    "deepseek_summary_f7ce11c6-c5ba-4201-a2e2-c32919867555.json",
+    "deepseek_summary_f87bd99c-8120-4329-8ef1-225fd33f9014.json",
+    "file-list.json"
+  ],
+  "count": 13,
+  "patterns": {
+    "deepseek": 12,
+    "claude": 0,
+    "other": 1
+  }
+}

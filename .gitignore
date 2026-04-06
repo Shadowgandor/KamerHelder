@@ -1,0 +1,26 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Pipeline output files
+recent_verslagen.json
+plenaire_verslagen.json
+recent_vergaderingen.json
+verslagen_with_content.json
+verslagen_with_content_partial.json
+verslagen_with_content_progress_*.json
+verslagen_parsed.json
+summary_*.json
+deepseek_summary_*.json
+documents/
+
+# Angular
+parliamentary-summaries/node_modules/
+parliamentary-summaries/dist/
+parliamentary-summaries/.angular/
+
+# macOS
+.DS_Store

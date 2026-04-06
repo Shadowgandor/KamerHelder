@@ -1,0 +1,434 @@
+<!-- src/app/app.component.html - Updated with loading states -->
+
+<div class="app-container">
+  <!-- Material Toolbar -->
+  <mat-toolbar color="primary" class="app-toolbar">
+    <mat-icon class="toolbar-icon">account_balance</mat-icon>
+    <span class="toolbar-title">Parliamentary Summaries</span>
+    <span class="toolbar-spacer"></span>
+    
+    <!-- Filter Toggle -->
+    <mat-icon
+      class="filter-toggle"
+      [matTooltip]="showFilters ? 'Hide Filters' : 'Show Filters'"
+      (click)="toggleFilters()"
+      style="cursor: pointer;">
+      search
+    </mat-icon>
+  </mat-toolbar>
+
+  <!-- Loading Progress Bar -->
+  <mat-progress-bar *ngIf="loading$ | async" mode="indeterminate" color="accent"></mat-progress-bar>
+
+  <!-- Subtitle -->
+  <div class="app-subtitle">
+    <p>Neutral, comprehensive summaries of Tweede Kamer debates with detailed context</p>
+    <div *ngIf="documentStats$ | async as stats" class="stats-chips">
+      <mat-chip-listbox>
+        <mat-chip>
+          <mat-icon matChipAvatar>event_note</mat-icon>
+          {{ stats.totalDocuments }} meetings
+        </mat-chip>
+        <mat-chip>
+          <mat-icon matChipAvatar>topic</mat-icon>
+          {{ stats.totalTopics }} topics
+        </mat-chip>
+        <mat-chip>
+          <mat-icon matChipAvatar>groups</mat-icon>
+          {{ stats.uniqueParties }} parties
+        </mat-chip>
+        <mat-chip *ngIf="stats.dateRange">
+          <mat-icon matChipAvatar>date_range</mat-icon>
+          {{ stats.dateRange.earliest | date:'dd/MM/yyyy' }} - {{ stats.dateRange.latest | date:'dd/MM/yyyy' }}
+        </mat-chip>
+      </mat-chip-listbox>
+    </div>
+  </div>
+
+  <mat-sidenav-container class="main-container">
+    <!-- Filters Sidebar -->
+    <mat-sidenav 
+      [opened]="showFilters" 
+      mode="side" 
+      class="filters-sidenav"
+      position="start">
+      
+      <div class="filters-content">
+        <!-- Search Section -->
+        <mat-card class="filter-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>search</mat-icon>
+              Search
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Search summaries...</mat-label>
+              <input matInput 
+                     [ngModel]="searchQuery"
+                     (ngModelChange)="onSearchChangeDebounced($event)">
+              <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-sidenav>
+
+    <!-- Main Content -->
+    <mat-sidenav-content class="main-content">
+      
+      <!-- Loading State -->
+      <div *ngIf="loading$ | async" class="loading-container">
+        <mat-card class="loading-card">
+          <mat-card-content>
+            <div class="loading-content">
+              <mat-spinner diameter="50"></mat-spinner>
+              <h3>Loading Parliamentary Documents...</h3>
+              <p>Discovering and processing summary files...</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error$ | async as error" class="error-container">
+        <mat-card class="error-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar color="warn">error</mat-icon>
+            <mat-card-title>Loading Issue</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>{{ error }}</p>
+            <button mat-raised-button color="primary" (click)="onRefreshDocuments()">
+              <mat-icon>refresh</mat-icon>
+              Try Again
+            </button>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Document List -->
+      <div *ngIf="!(loading$ | async)">
+        <mat-card class="documents-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>event_note</mat-icon>
+              Parliamentary Meetings
+              <span *ngIf="documents$ | async as documents" class="document-count">
+                ({{ documents.length }})
+              </span>
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="documents-grid" *ngIf="documents$ | async as documents">
+              <div *ngIf="documents.length === 0" class="no-documents">
+                <mat-icon>inbox</mat-icon>
+                <h3>No documents found</h3>
+                <p>Try adjusting your filters or refresh the data.</p>
+                <button mat-raised-button color="primary" (click)="onRefreshDocuments()">
+                  <mat-icon>refresh</mat-icon>
+                  Refresh
+                </button>
+              </div>
+              
+              <mat-card 
+                *ngFor="let document of documents; trackBy: trackByDocumentId" 
+                class="document-card"
+                [class.selected]="selectedDocumentId === document.id"
+                (click)="onDocumentSelected(document)"
+                style="cursor: pointer;"
+                matRipple>
+                
+                <mat-card-header>
+                  <mat-card-title class="document-title">{{ document.title }}</mat-card-title>
+                  <mat-card-subtitle>{{ document.formattedDate }}</mat-card-subtitle>
+                </mat-card-header>
+                
+                <mat-card-content>
+                  <p class="document-preview">
+                    {{ document.preview }}...
+                  </p>
+                </mat-card-content>
+                
+                <mat-card-actions class="document-stats">
+                  <mat-chip-listbox>
+                    <mat-chip>
+                      <mat-icon matChipAvatar>topic</mat-icon>
+                      {{ document.topicCount }} topics
+                    </mat-chip>
+                    <mat-chip>
+                      <mat-icon matChipAvatar>check_circle</mat-icon>
+                      {{ document.decisionCount }} decisions
+                    </mat-chip>
+                    <mat-chip *ngIf="document.hasNextSteps">
+                      <mat-icon matChipAvatar>schedule</mat-icon>
+                      {{ document.nextStepsCount }} next steps
+                    </mat-chip>
+                    <mat-chip>
+                      <mat-icon matChipAvatar>smart_toy</mat-icon>
+                      {{ document.summary.processing_info.ai_model || 'AI' }}
+                    </mat-chip>
+                  </mat-chip-listbox>
+                </mat-card-actions>
+              </mat-card>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Document Detail -->
+        <div *ngIf="selectedDocument$ | async as selectedDocument" class="document-detail">
+          
+          <!-- Header -->
+          <mat-card class="detail-header-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar>account_balance</mat-icon>
+              <mat-card-title>{{ selectedDocument.title }}</mat-card-title>
+              <mat-card-subtitle>{{ selectedDocument.formattedDate }}</mat-card-subtitle>
+            </mat-card-header>
+          </mat-card>
+
+          <!-- Executive Summary -->
+          <mat-card class="summary-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>summarize</mat-icon>
+                Executive Summary
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <p class="executive-summary">{{ selectedDocument.summary.executive_summary }}</p>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Topics -->
+          <mat-card class="topics-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>topic</mat-icon>
+                Main Topics ({{ selectedDocument.summary.main_topics.length }})
+              </mat-card-title>
+            </mat-card-header>
+            
+            <mat-card-content>
+              <div class="topics-list">
+                <mat-card 
+                  *ngFor="let topic of selectedDocument.summary.main_topics; trackBy: trackByTopicName"
+                  class="topic-card-simple">
+                  <ng-container *ngTemplateOutlet="topicTemplate; context: { topic: topic }"></ng-container>
+                </mat-card>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Key Decisions -->
+          <mat-card *ngIf="selectedDocument.hasDecisions" class="decisions-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>check_circle</mat-icon>
+                Key Decisions ({{ selectedDocument.summary.key_decisions.length }})
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <mat-list class="decisions-list">
+                <mat-list-item *ngFor="let decision of selectedDocument.summary.key_decisions; trackBy: trackByIndex">
+                  <mat-icon matListItemIcon>done</mat-icon>
+                  <div matListItemTitle>{{ decision }}</div>
+                </mat-list-item>
+              </mat-list>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Political Dynamics -->
+          <mat-card *ngIf="selectedDocument.summary.political_dynamics" class="dynamics-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>balance</mat-icon>
+                Political Dynamics
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <p class="dynamics-text">{{ selectedDocument.summary.political_dynamics }}</p>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Next Steps -->
+          <mat-card *ngIf="selectedDocument.hasNextSteps" class="next-steps-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>schedule</mat-icon>
+                Next Steps ({{ selectedDocument.summary.next_steps.length }})
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <mat-list class="next-steps-list">
+                <mat-list-item *ngFor="let step of selectedDocument.summary.next_steps; trackBy: trackByIndex">
+                  <mat-icon matListItemIcon>arrow_forward</mat-icon>
+                  <div matListItemTitle>{{ step }}</div>
+                </mat-list-item>
+              </mat-list>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Processing Info -->
+          <mat-card class="processing-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>smart_toy</mat-icon>
+                Processing Information
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="processing-stats">
+                <mat-chip-listbox>
+                  <mat-chip>
+                    <mat-icon matChipAvatar>analytics</mat-icon>
+                    {{ selectedDocument.summary.processing_info.chunks_processed }} chunks processed
+                  </mat-chip>
+                  <mat-chip>
+                    <mat-icon matChipAvatar>topic</mat-icon>
+                    {{ selectedDocument.summary.processing_info.total_topics_found }} topics found
+                  </mat-chip>
+                  <mat-chip>
+                    <mat-icon matChipAvatar>psychology</mat-icon>
+                    Enhanced with {{ selectedDocument.summary.processing_info.ai_model || 'AI' }}
+                  </mat-chip>
+                  <mat-chip>
+                    <mat-icon matChipAvatar>update</mat-icon>
+                    {{ selectedDocument.processingDate }}
+                  </mat-chip>
+                </mat-chip-listbox>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>
+
+<!-- Topic Template (Your Original Design) -->
+<ng-template #topicTemplate let-topic="topic">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon class="topic-icon">label</mat-icon>
+      {{ topic.topic }}
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <!-- Topic Context -->
+    <mat-card 
+      *ngIf="displayOptions.topicMode.showContext && topic.hasContext" 
+      class="context-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>info</mat-icon>
+          Context
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="topic.context?.why_discussed" class="context-section">
+          <h4><mat-icon>help</mat-icon> Why Discussed</h4>
+          <p>{{ topic.context.why_discussed }}</p>
+        </div>
+        <mat-divider *ngIf="topic.context?.why_discussed && topic.context?.background"></mat-divider>
+        <div *ngIf="topic.context?.background" class="context-section">
+          <h4><mat-icon>history</mat-icon> Background</h4>
+          <p>{{ topic.context.background }}</p>
+        </div>
+        <mat-divider *ngIf="topic.context?.background && topic.context?.stakes"></mat-divider>
+        <div *ngIf="topic.context?.stakes" class="context-section">
+          <h4><mat-icon>priority_high</mat-icon> Why It Matters</h4>
+          <p>{{ topic.context.stakes }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Topic Summary -->
+    <div class="topic-summary">
+      <h4>Discussion Summary</h4>
+      <p>{{ topic.summary }}</p>
+    </div>
+
+    <!-- Party Positions -->
+    <div class="party-positions">
+      <h4>
+        <mat-icon>groups</mat-icon>
+        Party Positions
+      </h4>
+      
+      <div class="positions-grid">
+        <mat-card 
+          *ngFor="let position of topic.partyPositionsArray; trackBy: trackByPartyName" 
+          class="position-card">
+          
+          <mat-card-header>
+            <div 
+              class="party-avatar-badge"
+              [style.background-color]="position.color">
+              {{ position.party }}
+            </div>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <!-- Main Position -->
+            <div class="main-position">
+              <mat-icon class="position-icon">record_voice_over</mat-icon>
+              <span>{{ position.mainPosition }}</span>
+            </div>
+
+            <!-- Specific Proposals -->
+            <div *ngIf="displayOptions.topicMode.showSpecificProposals && position.hasProposals" 
+                 class="specific-proposals">
+              <h5>
+                <mat-icon>lightbulb</mat-icon>
+                Specific Proposals
+              </h5>
+              <mat-chip-listbox>
+                <mat-chip 
+                  *ngFor="let proposal of position.proposals; trackBy: trackByIndex"
+                  class="proposal-chip">
+                  {{ proposal }}
+                </mat-chip>
+              </mat-chip-listbox>
+            </div>
+
+            <!-- Reasoning -->
+            <div *ngIf="displayOptions.topicMode.showReasoning && position.reasoning" 
+                 class="reasoning">
+              <h5>
+                <mat-icon>psychology</mat-icon>
+                Reasoning
+              </h5>
+              <p class="reasoning-text">{{ position.reasoning }}</p>
+            </div>
+
+            <!-- Evidence -->
+            <div *ngIf="displayOptions.topicMode.showEvidence && position.evidence" 
+                 class="evidence">
+              <h5>
+                <mat-icon>fact_check</mat-icon>
+                Evidence Cited
+              </h5>
+              <p class="evidence-text">{{ position.evidence }}</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Outcome -->
+    <mat-card *ngIf="topic.outcome" class="outcome-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>assignment_turned_in</mat-icon>
+          Outcome
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>{{ topic.outcome }}</p>
+      </mat-card-content>
+    </mat-card>
+  </mat-card-content>
+</ng-template>
