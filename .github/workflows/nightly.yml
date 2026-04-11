@@ -35,6 +35,15 @@ jobs:
           PYTHONUNBUFFERED: '1'
         run: python run_pipeline.py --summarizer claude --days 7
 
+      - name: Upload summaries as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: summaries-${{ github.run_id }}
+          path: summary_*.json
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Deploy summaries to Angular assets
         run: python deploy_summaries.py
 
@@ -42,7 +51,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add 'summary_*.json' 'parliamentary-summaries/src/assets/summaries/'
+          git add parliamentary-summaries/src/assets/summaries/
           git diff --staged --quiet && echo "No new summaries." || \
             git commit -m "chore: add new parliamentary summaries [skip ci]" && git push
 
