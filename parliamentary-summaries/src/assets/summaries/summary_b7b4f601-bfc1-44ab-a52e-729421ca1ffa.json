@@ -1,64 +1,83 @@
 {
-  "executive_summary": "The 60th parliamentary session of April 7, 2026 addressed 92 topics and produced 94 decisions, with significant debate centered on a controversial OCW language guide promoting inclusive terminology and concerns about potential kerosene shortages affecting aviation. While the language guide faced broad opposition from right-wing and centrist parties as ideological overreach, the government indicated willingness to reconsider it, and the School Absenteeism Reduction Act passed with multi-party support.",
+  "executive_summary": "The 60th parliamentary session of April 7, 2026 addressed 78 topics with 93 decisions, spanning education policy, spatial planning, energy security, and language guidelines. Key debates centered on the controversial OCW language guide, school truancy prevention legislation, kerosene supply crisis planning, and fireworks compensation regulations. The session demonstrated broad coalition consensus on education and spatial planning measures, while revealing significant ideological divisions over language policy between right-wing parties and the government.",
   "main_topics": [
     {
-      "topic": "OCW Language Guide Controversy",
-      "summary": "Parliament debated a leaked €40,000 internal ministry guide recommending inclusive terminology ('Jij-dag' instead of 'Moederdag/Vaderdag', avoiding 'zwart geld'). Critics across the political spectrum questioned its necessity, cost, ideological nature, and whether government should regulate language use. State Secretary Tielen defended the guide as promoting equal communication but acknowledged its potentially paternalistic appearance and lack of necessity.",
+      "topic": "OCW Language Guide and Inclusive Language Policy",
+      "summary": "A leaked internal language guide from the Ministry of Education recommending specific terminology changes (e.g., 'Jij-dag' instead of 'Moederdag/Vaderdag', avoiding certain racial descriptors) sparked heated debate. Critics argued the guide represented ideological overreach and unnecessary government control of language, while the State Secretary defended it as promoting careful, equal, and comprehensible government communication.",
       "party_positions": {
-        "Forum voor Democratie (Van Duijvenvoorde)": "Opposes as problematic language engineering that constructs rather than describes reality; questions government authority to impose language norms and criticizes the non-neutral, value-laden approach",
-        "PVV (Bosma)": "Strongly opposes as 'total insanity' and 'woke' American import; demands document be shredded and criticizes misplaced priorities given poor reading proficiency outcomes",
-        "JA21 (Russcher, Boomsma)": "Questions purpose and cost as government overreach functioning as 'word police' with ideological content and passive-aggressive enforcement",
-        "ChristenUnie (Ceder)": "Concerned the guide overreaches by setting societal norms (eliminating traditional holiday names) and creates tension between anti-tone-policing principles and enforcement practices",
-        "State Secretary Tielen": "Defends inclusive government communication principles but concedes guide may be unnecessary given staff professionalism and acknowledges paternalistic perception"
+        "Forum voor Democratie (Van Duijvenvoorde)": "Opposes as problematic overreach; argues language naturally evolves and doesn't need prescriptive top-down rules. Questions ideological basis and necessity.",
+        "PVV (Martin Bosma)": "Strongly opposes as 'woke' ideology and 'American nonsense'; criticizes word bans and argues government should focus on educational outcomes, not language policing.",
+        "Staatssecretaris Tielen (CDA/Government)": "Defends guide as promoting professional government communication standards; acknowledges no words are formally forbidden but emphasizes careful language use principles."
       },
-      "outcome": "State Secretary Tielen indicated willingness to review the guide and consider placing it 'in the cabinet' (effectively discarding it) given acknowledged lack of necessity and perception of paternalism"
+      "outcome": "State Secretary Tielen commits to reviewing the language guide with openness to elimination, stating 'Die mag wat mij betreft de kast in' (it can go in storage). No formal decision made but willingness to reconsider expressed."
     },
     {
-      "topic": "Kerosene Shortage and Aviation Supply Chain",
-      "summary": "Parliament discussed government preparedness for potential kerosene shortages affecting Schiphol airport and aviation sector. Debate centered on whether current strategic reserves (5 months), production capacity, and market-driven solutions are adequate safeguards. GroenLinks-PvdA pressed for more active government steering given the Netherlands' dual role as kerosene producer and Schiphol operator.",
+      "topic": "School Truancy Prevention Law (Wet terugdringen schoolverzuim)",
+      "summary": "Legislation aimed at reducing school absenteeism was debated with multiple amendments proposed. Discussions included preventive measures, data protection safeguards, and implementation frameworks for inclusive education cooperation networks.",
       "party_positions": {
-        "GroenLinks-PvdA (Kröger)": "Criticizes government as passively 'waiting' and questions whether current preparations are sufficient; presses for clarity on what 'active steering' means given government's systemic responsibility",
-        "Minister Karremans": "Reaffirms commitment to market-driven solutions; confirms government plays strategic coordination role through ongoing sector discussions and scenario planning rather than price controls or export restrictions"
+        "Motion-Westerveld/Ceder supporters": "Broad coalition support (SP, 50PLUS, GroenLinks-PvdA, D66, Volt, PvdD, CDA, DENK, VVD, ChristenUnie, BBB, FVD) advocating for legislation with preventive focus and inclusive education measures.",
+        "Government": "Supportive of amendment incorporation and implementation coordination."
       },
-      "outcome": "Government confirmed strategic coordination role across multiple ministries (IenW, EZK, Financiën) for kerosene shortage management; Minister Karremans will consult with State Secretary of Climate and Green Growth regarding strategic reserves"
+      "outcome": "Law passed with amendments. Motion-Westerveld/Ceder (nr. 23) on legislation and implementation agenda ADOPTED; Motion-Westerveld/Ceder (nr. 24) on examining cooperation networks role in inclusive education ADOPTED; Modified Motion-Claassen (nr. 28) clarifying temporary health-related exemptions ADOPTED."
     },
     {
-      "topic": "School Absenteeism Reduction Act",
-      "summary": "Parliament debated and voted on legislation aimed at reducing pupil absenteeism. The debate included multiple amendments addressing leerplichtambtenaar (compulsory education officer) responsibilities, data destruction timelines, absenteeism policy clarification, and interim evaluation procedures.",
+      "topic": "Kerosene Supply Crisis Planning",
+      "summary": "Discussions centered on government response to potential aviation fuel supply disruptions, including strategic reserve deployment, market intervention thresholds, and coordination with Schiphol and aviation sector. Minister Karremans emphasized scenario planning while avoiding market distortion.",
       "party_positions": {
-        "ChristenUnie (Ceder)": "Proposed multiple amendments including data destruction after three years, absenteeism policy clarification, and interim evaluation requirements",
-        "Coalition partners": "Supported amended framework with ChristenUnie amendments"
+        "GroenLinks-PvdA (Kröger)": "Seeks clarity on government leverage over exports, capacity planning, and intervention thresholds. Questions adequacy of 5-month reserve assumptions given import dependencies.",
+        "Minister Karremans": "Emphasizes market-driven initial approach with proactive scenario planning. Defends inter-ministerial coordination (IenW, EZK, Financiën) without committing to specific intervention timelines.",
+        "Other critics (De heer Heutink)": "Questions minister's prioritization, criticizing social media activity over crisis planning."
       },
-      "outcome": "School Absenteeism Reduction Act passed with multi-party support; Amendment Westerveld/Rooderkerk on preventive leerplichtambtenaar tasks adopted; Amended amendment Ceder on data destruction after three years adopted; Amendment Ceder on absenteeism policy clarification adopted; Amendment Ceder on interim evaluation adopted unanimously"
+      "outcome": "No formal decision reached; Minister commits to developing scenarios with aviation sector and reporting outcomes. Ongoing planning with multiple ministries; strategic reserve deployment under consideration but not yet activated."
     },
     {
-      "topic": "Middle East War Economic Consequences",
-      "summary": "Motion Grinwis/Flach addressing economic consequences of Middle East war was presented to parliament for consideration.",
+      "topic": "Spatial Planning and Housing (Nota Ruimte)",
+      "summary": "Comprehensive spatial planning strategy debated with motions covering VISTA-strategy categories, large-scale housing as national priority, nature conservation expansion (100,000+ hectares), water/soil management, and recreational space integration.",
       "party_positions": {
-        "Movers (Grinwis/Flach)": "Advocated for addressing economic impacts of Middle East conflict"
+        "Cross-party consensus": "Broad support for spatial planning measures; Motion-Mooiman (nr. 277) on VISTA-strategy UNANIMOUSLY ADOPTED. Motions on housing (Motion-Nobel nr. 297), nature expansion (Motion-Teunissen/Kostić nr. 307), and water/soil steering (Motion-Teunissen/Kostić nr. 304) all ADOPTED."
       },
-      "outcome": "Motion Grinwis/Flach on Middle East war economic consequences rejected with 75 votes for, 75 against (tied vote resulted in defeat)"
+      "outcome": "Six key spatial planning motions adopted: VISTA-strategy categories (unanimous), Nota Ruimte directive safeguards, recreational space inclusion, large-scale housing priority, water/soil steering, and 100,000+ hectares additional nature."
+    },
+    {
+      "topic": "Fireworks Compensation Regulation",
+      "summary": "Debate over compensation mechanisms and regulations following fireworks-related incidents. Discussion of industry consultation and interdepartmental coordination needed.",
+      "party_positions": {
+        "Government (Staatssecretaris Bertram)": "Committed to consultation process."
+      },
+      "outcome": "Deferred pending consultations. Staatssecretaris Bertram committed to meeting with industry the following week and interdepartmental coordination before May recess parliamentary briefing."
+    },
+    {
+      "topic": "Budget Reallocation for Crisis Relief",
+      "summary": "Motion-Grinwis/Flach proposed reallocating coalition agreement future budgets for immediate household and business relief.",
+      "party_positions": {
+        "Motion supporters": "Advocated for emergency budget reallocation to address immediate relief needs.",
+        "Opposition": "Disputed necessity or appropriateness of budget reallocation."
+      },
+      "outcome": "Motion rejected with equal votes (75-75). Evenly split result led to automatic rejection."
     }
   ],
   "key_decisions": [
-    "State Secretary Tielen indicated willingness to review the OCW language guide and consider placing it 'in the cabinet' (discarding it)",
-    "Government confirmed strategic coordination role across IenW, EZK, Financiën ministries for kerosene shortage management",
-    "Minister Karremans reaffirmed commitment to market-driven kerosene solutions rather than price controls or export restrictions",
-    "Minister Karremans committed to consulting with State Secretary of Climate and Green Growth on kerosene strategic reserves",
-    "Motion Grinwis/Flach on Middle East war economic consequences rejected (75-75 tie)",
-    "Amendment Westerveld/Rooderkerk on preventive leerplichtambtenaar tasks adopted",
-    "Amended amendment Ceder on data destruction after three years adopted",
-    "Amendment Ceder on absenteeism policy clarification adopted",
-    "Amendment Ceder on interim evaluation adopted unanimously",
-    "School Absenteeism Reduction Act passed with multi-party support"
+    "OCW Language Guide: State Secretary commits to review with openness to elimination",
+    "School Truancy Prevention Law: Passed with amendments (Motions 23, 24, 28 adopted)",
+    "Spatial Planning - VISTA Strategy (Motion 277): Unanimously adopted",
+    "Spatial Planning - Nota Ruimte Safeguards (Motion 280): Adopted",
+    "Spatial Planning - Recreational Space (Motion 290): Adopted",
+    "Spatial Planning - Large-Scale Housing Priority (Motion 297): Adopted",
+    "Spatial Planning - Water/Soil Steering (Motion 304): Adopted",
+    "Spatial Planning - Nature Expansion 100,000+ hectares (Motion 307): Adopted",
+    "Kerosene Supply Crisis: No formal decision; ongoing scenario planning with ministries",
+    "Fireworks Compensation: Deferred pending industry consultations",
+    "Budget Reallocation Motion (Grinwis/Flach): Rejected (75-75 tie vote)"
   ],
-  "political_dynamics": "The meeting revealed significant partisan divisions on cultural and ideological issues, with the right-wing parties (PVV, JA21, FvD) united in opposing the language guide as ideological overreach, while the center-right ChristenUnie raised constitutional concerns about government norm-setting. However, cooperation was evident on practical legislation like the Absenteeism Reduction Act, which passed with multi-party amendments. On kerosene policy, the government (supported by PVV and center-right coalition partners) favored market solutions against GroenLinks-PvdA pressure for more active state intervention. The tied 75-75 vote on Middle East consequences suggests a fragmented parliament without clear consensus on foreign economic policy.",
+  "political_dynamics": "The session revealed a marked coalition consensus on education and spatial planning issues, with rare unanimous or near-unanimous votes (VISTA-strategy passing unanimously). However, sharp ideological divisions emerged over language policy, with right-wing parties (PVV, FvD) using aggressive 'woke' framing to attack the government on cultural grounds, while the government maintained a defensive but somewhat dismissive posture. The kerosene crisis discussion showed left-wing parties (GroenLinks-PvdA) pushing for more aggressive intervention while the government maintained market-oriented rhetoric. The failed budget reallocation vote (75-75) suggests deeper coalition tensions over fiscal priorities that couldn't be resolved. Overall, the session demonstrated a functioning coalition capable of passing legislation with broad support, but with persistent ideological fractures on cultural and economic issues.",
   "next_steps": [
-    "State Secretary Tielen will review the OCW language guide with intention to discard or significantly revise it",
-    "Government ministries will continue sector consultations on kerosene shortage scenarios and strategic reserve adequacy",
-    "State Secretary of Climate and Green Growth will be consulted on kerosene strategic reserves policy",
-    "School Absenteeism Reduction Act will move forward with adopted amendments on leerplichtambtenaar tasks, data destruction protocols, policy clarification, and interim evaluation requirements",
-    "Follow-up consideration needed on Middle East economic consequences motion given tied parliamentary vote (potential for resubmission or revised approach)"
+    "Staatssecretaris Tielen to complete review of OCW language guide and determine its future status",
+    "Minister Karremans to develop kerosene supply scenarios with aviation sector and report outcomes",
+    "Staatssecretaris Bertram to conduct industry consultations on fireworks compensation next week",
+    "Interdepartmental coordination on fireworks regulations to conclude before May recess parliamentary briefing",
+    "Implementation of adopted school truancy prevention law with preventive measures and cooperation network examination",
+    "Spatial planning authorities to begin implementation of six adopted motions on VISTA-strategy, housing, nature, and water/soil management",
+    "Government to assess feasibility of 100,000+ hectares nature expansion commitment"
   ],
   "meeting_info": {
     "vergadering_titel": "60e vergadering, dinsdag 7 april 2026",
@@ -68,7 +87,7 @@
   },
   "processing_info": {
     "chunks_processed": 17,
-    "total_topics_found": 92,
-    "processing_date": "2026-04-11T21:13:06.008182"
+    "total_topics_found": 78,
+    "processing_date": "2026-04-11T22:25:36.221552"
   }
 }
