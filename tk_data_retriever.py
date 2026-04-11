@@ -466,15 +466,21 @@ def main():
     """
     Main function to demonstrate the usage with filtering and deduplication
     """
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--days", type=int, default=90)
+    parser.add_argument("--max-items", type=int, default=100)
+    args = parser.parse_args()
+
     print("=== Tweede Kamer Data Retriever (Filtered & Deduplicated) ===")
     print()
-    
+
     # Initialize the retriever
     retriever = TweedeKamerDataRetriever()
-    
+
     try:
         print("1. Fetching recent verslagen with filtering and deduplication...")
-        verslagen = retriever.get_all_recent_verslagen(days_back=90, max_items=100)
+        verslagen = retriever.get_all_recent_verslagen(days_back=args.days, max_items=args.max_items)
         
         if verslagen:
             # Save all verslagen
@@ -525,7 +531,7 @@ def main():
                 print(f"Sample: {getattr(sample, 'soort', 'Unknown')} from {getattr(vergadering, 'datum', 'Unknown date') if vergadering else 'No meeting'}")
         
         print("\n2. Fetching recent vergaderingen...")
-        vergaderingen = retriever.get_vergaderingen_info(days_back=90)
+        vergaderingen = retriever.get_vergaderingen_info(days_back=args.days)
         
         if vergaderingen:
             save_to_json(vergaderingen, "recent_vergaderingen.json")

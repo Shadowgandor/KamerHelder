@@ -12,6 +12,7 @@ jobs:
   pipeline:
     name: Run pipeline
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     permissions:
       contents: write  # needed to push new summary files back
 
@@ -31,6 +32,7 @@ jobs:
       - name: Run pipeline
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PYTHONUNBUFFERED: '1'
         run: python run_pipeline.py --summarizer claude --days 7
 
       - name: Deploy summaries to Angular assets

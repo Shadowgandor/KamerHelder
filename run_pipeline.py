@@ -30,14 +30,12 @@ STEP_OUTPUTS = {
 }
 
 
-def run_script(script: str, extra_env: dict = None):
+def run_script(script: str, extra_env: dict = None, extra_args: list = None):
     env = os.environ.copy()
     if extra_env:
         env.update(extra_env)
-    result = subprocess.run(
-        [sys.executable, f"{script}.py"],
-        env=env,
-    )
+    cmd = [sys.executable, f"{script}.py"] + (extra_args or [])
+    result = subprocess.run(cmd, env=env)
     if result.returncode != 0:
         print(f"\nStep '{script}' failed with exit code {result.returncode}. Aborting.")
         sys.exit(result.returncode)
@@ -89,7 +87,7 @@ def main():
 
     if start_index == 0:
         print("Step 1/4: Fetching parliamentary data...")
-        run_script("tk_data_retriever")
+        run_script("tk_data_retriever", extra_args=["--days", str(args.days), "--max-items", str(args.max_items)])
         check_prerequisite("plenaire_verslagen.json", "tk_data_retriever")
     else:
         print("Step 1/4: Skipping (--start-from)")
