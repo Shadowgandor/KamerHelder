@@ -1,0 +1,95 @@
+name: Nightly Pipeline & Deploy
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # 1am UTC (3am Amsterdam)
+  workflow_dispatch:      # Allow manual trigger from GitHub UI
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # Job 1: fetch new verslagen, summarise them, commit to repo
+  # ──────────────────────────────────────────────────────────────
+  pipeline:
+    name: Run pipeline
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # needed to push new summary files back
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python run_pipeline.py --summarizer claude --days 7
+
+      - name: Deploy summaries to Angular assets
+        run: python deploy_summaries.py
+
+      - name: Commit new summaries
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add 'summary_*.json' 'parliamentary-summaries/src/assets/summaries/'
+          git diff --staged --quiet && echo "No new summaries." || \
+            git commit -m "chore: add new parliamentary summaries [skip ci]" && git push
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 2: build Angular and deploy to GitHub Pages
+  #   Runs even when the pipeline job fails, so the site is always
+  #   kept up to date with whatever summaries are in the repo.
+  # ──────────────────────────────────────────────────────────────
+  deploy:
+    name: Build & deploy to GitHub Pages
+    needs: pipeline
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Checkout (with any summaries just committed)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: parliamentary-summaries/package-lock.json
+
+      - name: Install Node dependencies
+        working-directory: parliamentary-summaries
+        run: npm ci
+
+      - name: Build Angular app
+        working-directory: parliamentary-summaries
+        run: npm run build -- --base-href /KamerHelder/
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: parliamentary-summaries/dist/parliamentary-summaries/browser
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

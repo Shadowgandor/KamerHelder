@@ -588,16 +588,10 @@ def main():
         
         print(f"\n{len(new_verslagen)} verslagen need to be summarized")
         
-        # Ask for confirmation
         print("\nVersions to be summarized:")
         for i, verslag in enumerate(new_verslagen, 1):
             print(f"  {i}. {verslag.get('vergadering_titel', 'Unknown')} ({verslag.get('vergadering_datum', 'Unknown date')})")
-        
-        confirm = input(f"\nProceed with summarizing {len(new_verslagen)} meetings? (y/n): ")
-        if confirm.lower() != 'y':
-            print("Cancelled.")
-            return
-        
+
         # Initialize summarizer
         summarizer = ParliamentarySummarizer(api_key)
         
