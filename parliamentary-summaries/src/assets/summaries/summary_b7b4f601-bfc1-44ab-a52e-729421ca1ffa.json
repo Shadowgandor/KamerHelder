@@ -1,0 +1,74 @@
+{
+  "executive_summary": "The 60th parliamentary session of April 7, 2026 addressed 92 topics and produced 94 decisions, with significant debate centered on a controversial OCW language guide promoting inclusive terminology and concerns about potential kerosene shortages affecting aviation. While the language guide faced broad opposition from right-wing and centrist parties as ideological overreach, the government indicated willingness to reconsider it, and the School Absenteeism Reduction Act passed with multi-party support.",
+  "main_topics": [
+    {
+      "topic": "OCW Language Guide Controversy",
+      "summary": "Parliament debated a leaked €40,000 internal ministry guide recommending inclusive terminology ('Jij-dag' instead of 'Moederdag/Vaderdag', avoiding 'zwart geld'). Critics across the political spectrum questioned its necessity, cost, ideological nature, and whether government should regulate language use. State Secretary Tielen defended the guide as promoting equal communication but acknowledged its potentially paternalistic appearance and lack of necessity.",
+      "party_positions": {
+        "Forum voor Democratie (Van Duijvenvoorde)": "Opposes as problematic language engineering that constructs rather than describes reality; questions government authority to impose language norms and criticizes the non-neutral, value-laden approach",
+        "PVV (Bosma)": "Strongly opposes as 'total insanity' and 'woke' American import; demands document be shredded and criticizes misplaced priorities given poor reading proficiency outcomes",
+        "JA21 (Russcher, Boomsma)": "Questions purpose and cost as government overreach functioning as 'word police' with ideological content and passive-aggressive enforcement",
+        "ChristenUnie (Ceder)": "Concerned the guide overreaches by setting societal norms (eliminating traditional holiday names) and creates tension between anti-tone-policing principles and enforcement practices",
+        "State Secretary Tielen": "Defends inclusive government communication principles but concedes guide may be unnecessary given staff professionalism and acknowledges paternalistic perception"
+      },
+      "outcome": "State Secretary Tielen indicated willingness to review the guide and consider placing it 'in the cabinet' (effectively discarding it) given acknowledged lack of necessity and perception of paternalism"
+    },
+    {
+      "topic": "Kerosene Shortage and Aviation Supply Chain",
+      "summary": "Parliament discussed government preparedness for potential kerosene shortages affecting Schiphol airport and aviation sector. Debate centered on whether current strategic reserves (5 months), production capacity, and market-driven solutions are adequate safeguards. GroenLinks-PvdA pressed for more active government steering given the Netherlands' dual role as kerosene producer and Schiphol operator.",
+      "party_positions": {
+        "GroenLinks-PvdA (Kröger)": "Criticizes government as passively 'waiting' and questions whether current preparations are sufficient; presses for clarity on what 'active steering' means given government's systemic responsibility",
+        "Minister Karremans": "Reaffirms commitment to market-driven solutions; confirms government plays strategic coordination role through ongoing sector discussions and scenario planning rather than price controls or export restrictions"
+      },
+      "outcome": "Government confirmed strategic coordination role across multiple ministries (IenW, EZK, Financiën) for kerosene shortage management; Minister Karremans will consult with State Secretary of Climate and Green Growth regarding strategic reserves"
+    },
+    {
+      "topic": "School Absenteeism Reduction Act",
+      "summary": "Parliament debated and voted on legislation aimed at reducing pupil absenteeism. The debate included multiple amendments addressing leerplichtambtenaar (compulsory education officer) responsibilities, data destruction timelines, absenteeism policy clarification, and interim evaluation procedures.",
+      "party_positions": {
+        "ChristenUnie (Ceder)": "Proposed multiple amendments including data destruction after three years, absenteeism policy clarification, and interim evaluation requirements",
+        "Coalition partners": "Supported amended framework with ChristenUnie amendments"
+      },
+      "outcome": "School Absenteeism Reduction Act passed with multi-party support; Amendment Westerveld/Rooderkerk on preventive leerplichtambtenaar tasks adopted; Amended amendment Ceder on data destruction after three years adopted; Amendment Ceder on absenteeism policy clarification adopted; Amendment Ceder on interim evaluation adopted unanimously"
+    },
+    {
+      "topic": "Middle East War Economic Consequences",
+      "summary": "Motion Grinwis/Flach addressing economic consequences of Middle East war was presented to parliament for consideration.",
+      "party_positions": {
+        "Movers (Grinwis/Flach)": "Advocated for addressing economic impacts of Middle East conflict"
+      },
+      "outcome": "Motion Grinwis/Flach on Middle East war economic consequences rejected with 75 votes for, 75 against (tied vote resulted in defeat)"
+    }
+  ],
+  "key_decisions": [
+    "State Secretary Tielen indicated willingness to review the OCW language guide and consider placing it 'in the cabinet' (discarding it)",
+    "Government confirmed strategic coordination role across IenW, EZK, Financiën ministries for kerosene shortage management",
+    "Minister Karremans reaffirmed commitment to market-driven kerosene solutions rather than price controls or export restrictions",
+    "Minister Karremans committed to consulting with State Secretary of Climate and Green Growth on kerosene strategic reserves",
+    "Motion Grinwis/Flach on Middle East war economic consequences rejected (75-75 tie)",
+    "Amendment Westerveld/Rooderkerk on preventive leerplichtambtenaar tasks adopted",
+    "Amended amendment Ceder on data destruction after three years adopted",
+    "Amendment Ceder on absenteeism policy clarification adopted",
+    "Amendment Ceder on interim evaluation adopted unanimously",
+    "School Absenteeism Reduction Act passed with multi-party support"
+  ],
+  "political_dynamics": "The meeting revealed significant partisan divisions on cultural and ideological issues, with the right-wing parties (PVV, JA21, FvD) united in opposing the language guide as ideological overreach, while the center-right ChristenUnie raised constitutional concerns about government norm-setting. However, cooperation was evident on practical legislation like the Absenteeism Reduction Act, which passed with multi-party amendments. On kerosene policy, the government (supported by PVV and center-right coalition partners) favored market solutions against GroenLinks-PvdA pressure for more active state intervention. The tied 75-75 vote on Middle East consequences suggests a fragmented parliament without clear consensus on foreign economic policy.",
+  "next_steps": [
+    "State Secretary Tielen will review the OCW language guide with intention to discard or significantly revise it",
+    "Government ministries will continue sector consultations on kerosene shortage scenarios and strategic reserve adequacy",
+    "State Secretary of Climate and Green Growth will be consulted on kerosene strategic reserves policy",
+    "School Absenteeism Reduction Act will move forward with adopted amendments on leerplichtambtenaar tasks, data destruction protocols, policy clarification, and interim evaluation requirements",
+    "Follow-up consideration needed on Middle East economic consequences motion given tied parliamentary vote (potential for resubmission or revised approach)"
+  ],
+  "meeting_info": {
+    "vergadering_titel": "60e vergadering, dinsdag 7 april 2026",
+    "vergadering_datum": "2026-04-07T00:00:00+02:00",
+    "verslag_id": "b7b4f601-bfc1-44ab-a52e-729421ca1ffa",
+    "status": "VerslagStatus.ONGECORRIGEERD"
+  },
+  "processing_info": {
+    "chunks_processed": 17,
+    "total_topics_found": 92,
+    "processing_date": "2026-04-11T21:13:06.008182"
+  }
+}

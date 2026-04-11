@@ -1,0 +1,90 @@
+{
+  "executive_summary": "The 33rd parliamentary session of January 21, 2026, focused primarily on economic policy and innovation, with 85 topics discussed and 55 decisions made. Three key motions on start-up support were unanimously approved, including commitments to improve IP deal terms, secure employee participation schemes, and fund academic valorization. The session also initiated budget debates on the Ministry of Economic Affairs and National Growth Fund, revealing coalition tensions over R&D investment financing and the role of public versus private investment.",
+  "main_topics": [
+    {
+      "topic": "Start-ups and Scale-ups Support",
+      "summary": "Parliament debated comprehensive support measures for Dutch start-ups and scale-ups, covering intellectual property deal terms for academic spin-offs, long-term security of employee participation regulations, and structural financing for the valorization of academic research into commercial applications. Discussion emphasized that entrepreneurial support requires coordinated action across multiple government portfolios beyond Economic Affairs.",
+      "party_positions": {
+        "VVD (Martens-America)": "Supports structural debate on start-ups; warns against making entrepreneurs too comfortable; emphasizes need for real action beyond Economic Affairs portfolio including sick leave policies and fiscal measures",
+        "CDA (Van Lanschot)": "Supports long-term security for employee participation regulations; emphasizes need for consistency and sector support",
+        "D66 (Oualhadj)": "Advocates for structural financing of academic spin-offs and valorization; emphasizes that knowledge transfer offices need support",
+        "Minister Karremans (Economic Affairs)": "Appreciative of all motions; committed to improving deal terms, securing long-term basis for employee participation, and examining valorization options"
+      },
+      "outcome": "Three motions approved: Motion 744 on IP deal terms, Motion 745 on employee participation security, and Motion 746 on valorization financing investigation"
+    },
+    {
+      "topic": "Research and Development Investment (Lisbon Goal)",
+      "summary": "Debate on Netherlands' commitment to invest 3% of GDP in R&D with minimum 1% public funding. Discussion revealed coalition tensions regarding deficit spending and public versus private investment roles in achieving the Lisbon Goal target.",
+      "party_positions": {
+        "D66 (Oualhadj)": "Confirmed 3% R&D target is D66's negotiation position; declined to pre-empt specific deficit spending details during coalition negotiations",
+        "Volt (Dassen)": "Questioned whether 3% Lisbon Goal must be included in government agreement",
+        "GroenLinks-PvdA (Van der Lee)": "Pressed for clarification on deficit spending tolerance for R&D investments; accused VVD of avoiding commitment to higher government debt",
+        "VVD (Martens-America)": "Stated fundamental disagreement with GroenLinks-PvdA on planned economy approach; advocates for both public and private investment"
+      },
+      "outcome": "No final decision reached; ongoing coalition negotiation"
+    },
+    {
+      "topic": "Strategic Autonomy and Sector Prioritization",
+      "summary": "Discussion on identifying strategically important sectors for government support and lessons learned from over-reliance on globalization. Semiconductor industry cited as example of strategic sector requiring attention.",
+      "party_positions": {
+        "SP (Jimmy Dijk)": "Questioned which sectors D66 considers strategically important and whether lessons were learned from past globalization over-reliance",
+        "D66 (Oualhadj)": "Cited semiconductor industry as strategic example; emphasized need for broader sectoral assessment through subsidy allocation reviews"
+      },
+      "outcome": "Broader sectoral assessment planned through subsidy allocation reviews"
+    },
+    {
+      "topic": "Regulatory Burden Reduction and Business Support",
+      "summary": "Multiple initiatives discussed including Shop Opening Hours Act evaluation, regulatory simplifications, collective sick leave organization for small businesses, and potential extension of COVID business debt repayment periods. New parliament member raised question about small business rental caps.",
+      "party_positions": {
+        "VVD": "Plans to submit amendment for additional impulse district subsidies; supports regulatory reduction and business support measures",
+        "New Member Schoonis": "Emphasized regulatory burden reduction for SMEs; questioned whether small business rental caps could be considered"
+      },
+      "outcome": "Government proceeding with Shop Opening Hours Act evaluation before summer; first 500 regulatory removals/simplifications being implemented; cabinet to respond on collective sick leave; discussion on COVID debt repayment extension"
+    },
+    {
+      "topic": "AI Innovation and Worker Protection Balance",
+      "summary": "Discussion on balancing artificial intelligence innovation with worker protection concerns. VVD proposed organizing round-table discussion with AI experts.",
+      "party_positions": {
+        "VVD": "Committed to organizing round-table discussion with AI experts to address balance between innovation and worker protection"
+      },
+      "outcome": "Round-table discussion planned"
+    }
+  ],
+  "key_decisions": [
+    "Motion 32637 nr. 744: Government commits to improving intellectual property deal terms for academic spin-offs (Approved)",
+    "Motion 32637 nr. 745: Government to ensure long-term security of employee participation scheme basis from 2027 (Approved)",
+    "Motion 32637 nr. 746: Government to investigate structural financing options for academic spin-off creation (Approved)",
+    "Budget treatment initiated on Ministry of Economic Affairs 2026 budget (36800-XIII) and National Growth Fund budget (36800-L)",
+    "VVD amendment planned for additional impulse district subsidies for two municipalities",
+    "VVD to organize round-table discussion with AI experts on innovation-worker protection balance",
+    "Government evaluation of Shop Opening Hours Act to proceed before summer",
+    "First 500 regulatory removals/simplifications being implemented",
+    "Cabinet to respond on collective sick leave organization for small businesses",
+    "Discussion initiated on potential extension of COVID business debt repayment periods"
+  ],
+  "political_dynamics": "The session revealed a broad consensus on start-up and innovation support, with all parties and government backing the three startup-related motions. However, significant coalition tensions emerged regarding R&D financing and public investment strategy. The GroenLinks-PvdA/VVD divide reflects fundamental disagreements about the role of state intervention—GroenLinks-PvdA advocates higher deficit spending for R&D while VVD emphasizes mixed public-private approaches and warns against planned economy thinking. D66, positioned between these poles, acknowledged the 3% Lisbon Goal as a negotiation priority but declined to pre-commit to specific deficit levels. The session also highlighted a new parliament member (Schoonis) introducing fresh perspectives on business support and economic clustering.",
+  "next_steps": [
+    "Continue budget debate on Ministry of Economic Affairs and National Growth Fund budgets",
+    "Coalition negotiations on R&D investment financing and Lisbon Goal targets to conclude",
+    "Government to improve intellectual property deal terms for academic spin-offs",
+    "Implementation of employee participation scheme security measures from 2027",
+    "Investigation and recommendation on structural financing for academic valorization",
+    "VVD to submit amendment for district subsidy expansion",
+    "VVD round-table discussion with AI experts to be organized",
+    "Shop Opening Hours Act evaluation to complete before summer",
+    "Cabinet response due on collective sick leave organization for small businesses",
+    "Continued regulatory simplification efforts (target: 500+ removals)",
+    "Assessment of COVID business debt repayment period extension options"
+  ],
+  "meeting_info": {
+    "vergadering_titel": "33e vergadering, woensdag 21 januari 2026",
+    "vergadering_datum": "2026-01-21T00:00:00+01:00",
+    "verslag_id": "f7aee070-fc90-4470-ac6b-e250e5523c17",
+    "status": "VerslagStatus.GECORRIGEERD"
+  },
+  "processing_info": {
+    "chunks_processed": 14,
+    "total_topics_found": 85,
+    "processing_date": "2026-04-06T15:41:35.221295"
+  }
+}

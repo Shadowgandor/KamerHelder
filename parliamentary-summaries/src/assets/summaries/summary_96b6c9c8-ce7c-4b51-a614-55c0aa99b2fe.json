@@ -1,0 +1,68 @@
+{
+  "executive_summary": "The 41st Dutch parliamentary meeting on February 10, 2026 addressed critical issues of police officer safety and public health threats, including asbestos-contaminated products. While multiple parties criticized the government's response as insufficiently decisive, several concrete measures were committed to including NVWA investigations, industry coordination, and police protection recommendations for the incoming cabinet.",
+  "main_topics": [
+    {
+      "topic": "Police Officer Safety and Support",
+      "summary": "Parliament discussed a Utrecht police officer forced into hiding with his family after making an arrest, raising broader concerns about police leadership response, officer morale, recruitment challenges, and the culture of fear within law enforcement. Debates centered on whether the police chief provided adequate public backing and what systemic protections are needed.",
+      "party_positions": {
+        "JA21 (Coenradie)": "Strongly critical of police leadership for inadequate public support. Demanded concrete measures to protect the officer and restore trust. Emphasized that effective authority requires standing firmly behind personnel.",
+        "VVD (Van der Plas)": "Expressed sympathy for the officer and concern about recruitment impacts, questioning who would pursue policing if colleagues lack employer protection.",
+        "GroenLinks-PvdA (Van der Werf)": "Supported the officer and focused on doxing enforcement, asking about legal consequences for those who forced the family into hiding.",
+        "PVV (Faber)": "Criticized government inaction despite repeated parliamentary warnings about police issues, demanding concrete rather than procedural responses.",
+        "DENK (El Abassi)": "Offered balanced perspective, noting that criticism of the police chief's nuanced response may itself be unfair."
+      },
+      "outcome": "Minister Rijkaart committed to relaying police protection system recommendations and body camera funding to the next cabinet. Government committed to providing written information about how police handle threats against officers."
+    },
+    {
+      "topic": "Asbestos-Contaminated Play Sand Crisis",
+      "summary": "Parliament addressed discovery of asbestos-contaminated products (particularly play sand) being sold in the Netherlands, with comparison to Belgium and Australia's more aggressive public responses. Debate focused on government's precautionary measures, industry coordination, and inspection transparency.",
+      "party_positions": {
+        "SP (Beckerman)": "Demanded precautionary measures comparable to Belgium and Australia, criticizing the Dutch government's approach as insufficiently decisive and lacking adequate public communication.",
+        "NVWA/Government (Tielen)": "Defended the Dutch approach as effective, emphasizing coordination with industry and company responsibility. Argued that visible action (product removal from shelves) is already occurring without requiring the same public announcements as other countries."
+      },
+      "outcome": "NVWA investigation underway; industry organizations and toy importers reinforced legal obligations; companies agreed not to sell non-compliant products with removal already occurring from online platforms and retail shops. NVWA to enhance inspection transparency and increase inter-agency cooperation. Belgium-Netherlands coordination on product safety ongoing."
+    },
+    {
+      "topic": "Regulatory Compliance and Industry Oversight",
+      "summary": "Broader discussion of enforcement mechanisms for food safety, pesticide regulation, and product compliance across multiple sectors including flower cultivation and toy imports.",
+      "party_positions": {
+        "Government": "Committed to enhanced sanctioning regime for pesticide regulation violations and benchmark system development for flower cultivation sector (to be continued by successor cabinet)."
+      },
+      "outcome": "Government considering strengthened enforcement mechanisms; flower cultivation benchmark system development proceeding; European regulatory alignment discussions ongoing."
+    }
+  ],
+  "key_decisions": [
+    "NVWA investigation into asbestos-contaminated play sand formally initiated",
+    "Contact with industry organizations reinforcing asbest-free product obligations",
+    "Companies committed to removing non-compliant products from shelves and online platforms",
+    "Minister Rijkaart to convey police protection system and body camera funding recommendations to successor cabinet",
+    "Government to provide written explanation of police threat-handling procedures",
+    "State Secretary Tielen to send parliamentary letter detailing past actions and NVWA investigation results before transition",
+    "NVWA to increase inspection result transparency and inter-agency cooperation",
+    "Enhanced sanctioning regime for pesticide violations under consideration",
+    "Flower cultivation sector benchmark system development continuing",
+    "Belgium-Netherlands coordination on product safety and European regulations to continue"
+  ],
+  "political_dynamics": "The meeting revealed significant government-opposition tension regarding response adequacy. Multiple parties (JA21, VVD, PVV, SP) criticized the government for procedural rather than concrete responses, particularly regarding police support and asbestos crisis management. The government, operating in a transitional period with limited time before cabinet change, emphasized legal constraints and measures already taken. DENK offered a more balanced perspective on police leadership criticism. Coalition dynamics appear strained, with broad cross-party frustration about implementation gaps, though specific partisan disagreements were limited. The incoming cabinet will inherit commitments on police protection, asbestos monitoring, and regulatory enforcement.",
+  "next_steps": [
+    "Successor cabinet to receive police protection system and body camera funding recommendations from Minister Rijkaart",
+    "State Secretary Tielen to deliver parliamentary letter on asbestos investigation and historical actions before leaving office",
+    "NVWA to continue asbestos investigation and enhance transparency of inspection results",
+    "Industry monitoring of product compliance removal from retail and online channels",
+    "Belgium-Netherlands coordination meetings on product safety standards to continue",
+    "Flower cultivation sector benchmark system development to proceed under successor cabinet",
+    "Enhanced pesticide regulation sanctioning regime to be evaluated and potentially implemented",
+    "Follow-up on police officer protection measures and morale restoration efforts by new government"
+  ],
+  "meeting_info": {
+    "vergadering_titel": "41e vergadering, dinsdag 10 februari 2026",
+    "vergadering_datum": "2026-02-10T00:00:00+01:00",
+    "verslag_id": "96b6c9c8-ce7c-4b51-a614-55c0aa99b2fe",
+    "status": "VerslagStatus.ONGECORRIGEERD"
+  },
+  "processing_info": {
+    "chunks_processed": 15,
+    "total_topics_found": 95,
+    "processing_date": "2026-04-06T19:03:49.896172"
+  }
+}

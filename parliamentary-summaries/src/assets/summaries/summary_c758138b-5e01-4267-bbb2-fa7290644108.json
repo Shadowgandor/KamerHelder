@@ -1,0 +1,125 @@
+{
+  "executive_summary": "The 34th parliamentary session on January 22, 2026, addressed 94 topics with 75 decisions, focusing heavily on infrastructure challenges and housing development. Key discussions centered on shared mobility standards, critical infrastructure funding needs, and several urgent regional crises including Terschelling harbor access and bridge/tunnel solutions in the Netherlands.",
+  "main_topics": [
+    {
+      "topic": "Shared Mobility (Deelmobiliteit) in Housing Developments",
+      "summary": "Parliament debated ensuring reliable shared mobility services in large-scale housing developments to reduce parking requirements and improve housing affordability. Concerns centered on private operators potentially withdrawing services, leaving residents stranded. The government sought standardized definitions and governance frameworks while exercising caution about developer incentives.",
+      "party_positions": {
+        "D66 (Van Asten)": "Strongly supports structured approach with motion for harmonized shared mobility; emphasizes cost-sharing mechanisms where developers benefit from reduced parking while contributing to guaranteed services; frames as affordability solution",
+        "CDA (Zwinkels)": "Supportive of sustainable transport solutions; emphasizes electric vehicle transition and congestion mitigation; appreciates government's work on definitions and SME support",
+        "Government (Staatssecretaris Aartsen)": "Cautiously supportive but emphasizes private market limitations; concerned about developers using it to circumvent parking standards without genuine long-term commitment; committed to addressing through MIRT consultation in autumn"
+      },
+      "outcome": "Motion 31305 (Van Asten) referred to parliament for decision; government to address governance framework at autumn MIRT consultation"
+    },
+    {
+      "topic": "Vehicle Reclassification Relief",
+      "summary": "Discussion regarding relief measures for approximately 15,000 vehicles reclassified under new regulations, with budgetary and fairness implications for affected vehicle owners.",
+      "party_positions": {
+        "Parliament (Goudzwaard)": "Sought clarification on government support for reclassified vehicles before voting on relief motion"
+      },
+      "outcome": "Motion 31305 (Goudzwaard) held pending ministerial letter explaining government approach; vote deferred pending clarification"
+    },
+    {
+      "topic": "Merwedelijn Tram Expansion (Utrecht Region)",
+      "summary": "Funding allocation for expanded tram service supporting housing development in Utrecht region, enabling infrastructure investment for growing urban areas.",
+      "party_positions": {
+        "Government": "Committed to housing-integrated infrastructure"
+      },
+      "outcome": "Additional €562 million confirmed for Merwedelijn tram; enables preliminary decision in autumn 2026"
+    },
+    {
+      "topic": "Gerrit Krol Bridge/Tunnel Crisis (Friesland)",
+      "summary": "Critical infrastructure debate over €11M temporary bridge funding for essential regional access. 36 ship collisions since 2000 documented; bridge serves as sole reliable passage. Government initially resisted funding; parliament challenged proportionality argument.",
+      "party_positions": {
+        "GroenLinks-PvdA (De Hoop)": "Challenged government refusal as disproportionate given documented collision history and regional importance",
+        "SP (Beckerman)": "Requested evidence of government willingness to reconsider permanent bridge solution; advocated for community engagement",
+        "Government (Minister Tieman)": "Initially cautious on temporary funding; acknowledged unacceptability of collision rate; committed to reconsidering options with regional stakeholders and exploring all alternatives including ferry connections"
+      },
+      "outcome": "Minister Tieman committed to exploring alternative solutions within couple of months; community consultation planned"
+    },
+    {
+      "topic": "Terschelling Harbor Crisis",
+      "summary": "Urgent regional crisis affecting island community with sole-access dependency. Harbor deterioration creating €3,000 per capita burden on local population and threatening emergency access and economic viability.",
+      "party_positions": {
+        "Multiple Parties (GroenLinks-PvdA, VVD, BBB)": "Coordinated pressure emphasizing uniqueness of crisis, economic impact, and urgent timeline",
+        "Government (Minister Tieman)": "Acknowledged crisis severity and unique circumstances; committed to high-level consultation in March 2026 with BZK and Fryslân province coordination"
+      },
+      "outcome": "March 2026 high-level consultation scheduled; government committed to briefing parliament on outcomes after consultation; coordination across BZK and provincial level"
+    },
+    {
+      "topic": "Schiphol Airport Service Disruptions",
+      "summary": "Independent external evaluation of recent chaos at Schiphol Airport, with passenger compensation framework included in assessment scope.",
+      "party_positions": {
+        "Government": "Commissioned independent evaluation"
+      },
+      "outcome": "External evaluation to be completed before summer 2026; passenger compensation included in scope"
+    },
+    {
+      "topic": "Lelystad Airport Dual-Use Decision",
+      "summary": "Future operational status and mixed-use development potential for Lelystad Airport; decision deferred pending government formation.",
+      "party_positions": {
+        "Parliament (Motion Kröger)": "Deferred decision to next government"
+      },
+      "outcome": "Decision deferred to next government per motion-Kröger"
+    },
+    {
+      "topic": "Infrastructure Funding Emergency",
+      "summary": "Minister Tieman delivered urgent plea regarding critical infrastructure investment shortfall, citing €34.5B maintenance backlog, declining investment as percentage of GDP, and national security/economic resilience risks.",
+      "party_positions": {
+        "Government (Minister Tieman)": "Advocated for substantially increased infrastructure spending; characterized current trajectory as unsustainable for national economic and security interests"
+      },
+      "outcome": "Urgent budget priority signaled; parliament to consider increased allocation in forthcoming budget discussions"
+    },
+    {
+      "topic": "Maintenance Planning (10-16 Year Cycle)",
+      "summary": "Technical clarification needed on maintenance planning framework and budget allocation methodologies before MIRT meeting.",
+      "party_positions": {
+        "Government": "Committed to providing clarification letter"
+      },
+      "outcome": "Letter to be provided before Monday MIRT meeting"
+    },
+    {
+      "topic": "Soortmanagementplan (SMP) Effectiveness Analysis",
+      "summary": "Review of species management plan effectiveness with focus on identifying potential cost savings and efficiency improvements.",
+      "party_positions": {
+        "Government": "Committed to comprehensive analysis"
+      },
+      "outcome": "Government to analyze SMP effectiveness for cost optimization"
+    }
+  ],
+  "key_decisions": [
+    "Motion 31305 (Van Asten on shared mobility) referred to parliament for vote; government expressed qualified support with caveats on private market solutions",
+    "Motion 31305 (Goudzwaard on vehicle reclassification) held pending ministerial clarification letter",
+    "€562 million additional funding confirmed for Merwedelijn tram expansion; preliminary decision enabled for autumn 2026",
+    "Minister Tieman committed to exploring all alternative infrastructure solutions (including ferry connections) for bridge/tunnel situation within couple of months",
+    "March 2026 high-level consultation scheduled for Terschelling harbor crisis with BZK and Fryslân province coordination",
+    "Independent external evaluation of Schiphol chaos to be completed before summer 2026 with passenger compensation included",
+    "Lelystad Airport dual-use decision deferred to next government (Motion Kröger)",
+    "Parliament to be briefed on Terschelling harbor consultation outcomes after March meeting",
+    "Clarification letter on 10-16 year maintenance planning to be provided before Monday MIRT meeting",
+    "Government to analyze Soortmanagementplan (SMP) effectiveness for cost savings identification"
+  ],
+  "political_dynamics": "The session revealed significant cross-party consensus on infrastructure urgency, with coordinated pressure from GroenLinks-PvdA, VVD, and BBB on regional crises. D66 led on housing-integrated shared mobility with structured cost-sharing proposals, while CDA supported sustainability angles. Government (Minister Tieman and Staatssecretaris Aartsen) demonstrated flexibility on several issues—acknowledging proportionality arguments on bridge funding and committing to regional consultations—but maintained caution on shared mobility market solutions. Notable shift: initial government resistance to Gerrit Krol Bridge funding was challenged and reconsidered following parliamentary pressure on collision evidence. Coalition dynamics suggest pragmatic negotiation over ideological division, with infrastructure investment emerging as urgent cross-party priority. Regional parties effectively amplified local crises (Friesland, Terschelling) into national parliamentary attention.",
+  "next_steps": [
+    "Shared mobility motion (31305 Van Asten) proceeds to parliament vote; MIRT autumn consultation to develop governance framework",
+    "Vehicle reclassification motion (31305 Goudzwaard) vote pending ministerial clarification letter delivery",
+    "Bridge/tunnel alternatives to be explored and presented within couple of months; community consultation to be conducted",
+    "March 2026 high-level consultation on Terschelling harbor; subsequent parliamentary briefing required",
+    "Schiphol evaluation completion before summer 2026; passenger compensation framework to be implemented",
+    "Maintenance planning clarification letter to be provided before Monday MIRT meeting",
+    "Soortmanagementplan effectiveness analysis to be conducted and reported",
+    "Lelystad Airport dual-use decision reserved for next government agenda",
+    "Infrastructure budget discussions to incorporate urgent funding needs raised by Minister Tieman"
+  ],
+  "meeting_info": {
+    "vergadering_titel": "34e vergadering, donderdag 22 januari 2026",
+    "vergadering_datum": "2026-01-22T00:00:00+01:00",
+    "verslag_id": "c758138b-5e01-4267-bbb2-fa7290644108",
+    "status": "VerslagStatus.GECORRIGEERD"
+  },
+  "processing_info": {
+    "chunks_processed": 14,
+    "total_topics_found": 94,
+    "processing_date": "2026-04-06T15:32:40.389256"
+  }
+}

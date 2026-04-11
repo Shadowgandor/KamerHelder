@@ -1,0 +1,97 @@
+{
+  "executive_summary": "The 43rd parliamentary session on February 12, 2026 addressed major fiscal and energy policy reforms, including the contentious Box 3 wealth tax implementation and urgent measures to address energy affordability and grid infrastructure challenges. With 81 topics debated and 70 decisions made, the session reflected significant disagreements between progressive parties advocating for stronger wealth taxation and conservative parties opposing tax increases, while energy policy discussions centered on balancing affordability, sustainability, and infrastructure investment.",
+  "main_topics": [
+    {
+      "topic": "Box 3 Wealth Tax Reform (Wet werkelijk rendement box 3)",
+      "summary": "Extensive debate on implementing actual return taxation for Box 3 wealth tax, with nine substantive amendments proposed covering tax rates, property exemptions, thresholds, and loss carry-back provisions. The government's base proposal faced criticism from both left-wing parties seeking higher rates and right-wing parties opposing progressive taxation.",
+      "party_positions": {
+        "SP, GroenLinks-PvdA, PvdD, DENK": "Supported higher tax rates and more comprehensive wealth taxation measures",
+        "SGP (Stoffer)": "Critical of low tax-free thresholds but insisted proposals must be properly funded to avoid increasing state debt and burdening future generations",
+        "VVD, CDA, ChristenUnie, JA21, BBB": "Mostly opposed progressive tax increases and supported amendments for higher exemptions and lower tax burdens"
+      },
+      "outcome": "All nine substantive amendments rejected; only an evaluation amendment (Inge van Dijk) accepted requiring a three-year review of the Box 3 reform implementation"
+    },
+    {
+      "topic": "Energy Affordability and Household Energy Costs",
+      "summary": "Heated debate over rising energy bills affecting over 500,000 households in energy poverty. Discussion covered gas price trends, energy tax cuts, support mechanisms for low-income households, and the effectiveness of government structural measures.",
+      "party_positions": {
+        "Minister Hermans (Government)": "Acknowledged concerns while emphasizing structural solutions: €100M annual energy tax cuts, €30M for municipalities supporting energy-poor households, and improved insulation programs",
+        "SP (Kops)": "Criticized government policy as deliberately raising costs despite the Netherlands' gas heritage; blamed policy failures for the energy poverty crisis",
+        "JA21 (Flach)": "Urged increased funding for oversubscribed gas-free rental housing program (noted €118M returned to general budget)"
+      },
+      "outcome": "Government defended structural approach but acknowledged persistent energy poverty problem; decision on increased housing program funding deferred to successor following proper budgetary process"
+    },
+    {
+      "topic": "Grid Infrastructure Crisis and TenneT Network Congestion",
+      "summary": "Critical discussion of TenneT's anticipated connection freeze in three provinces due to network congestion, with concerns about limiting new renewable energy and industrial connections. Debate centered on balancing rapid renewable energy expansion with grid capacity constraints.",
+      "party_positions": {
+        "ChristenUnie (Grinwis)": "Raised alarm about TenneT's anticipated drastic connection freeze",
+        "Minister Hermans (Government)": "Expressed strong concern and committed to validating TenneT's data before accepting such measures; committed to provincial consultation"
+      },
+      "outcome": "Three-pronged response adopted: validation of TenneT calculations, identification of preventive measures, and region-specific solutions to address grid capacity constraints"
+    },
+    {
+      "topic": "Gas Storage and Energy Security Strategy",
+      "summary": "Debate over gas storage fill targets, market mechanisms, and strategic reserves. Discussion included adjusting November 1, 2026 target, enabling strategic gas reserves by law, and accelerating North Sea gas production.",
+      "party_positions": {
+        "JA21 (Van den Berg)": "Argued market incentives would fill storages naturally without rigid government mandates",
+        "Minister Hermans (Government)": "Defended fill targets as necessary for energy security given geopolitical risks; prioritized strategic certainty over pure market mechanisms"
+      },
+      "outcome": "Gas storage fill target adjusted upward for November 1, 2026; strategic gas reserves now possible by law in 2026 with first refilling committed; North Sea gas production accelerated through operator agreements; 5% revenue-sharing agreement finalized for new onshore gas extraction (up to 2 billion cubic meters)"
+    },
+    {
+      "topic": "Grid Investment Amortization Strategy",
+      "summary": "Proposal to extend amortization periods for grid infrastructure investments to spread 50-60 year infrastructure costs across multiple benefiting generations.",
+      "party_positions": {
+        "JA21 (Flach)": "Argued it is logical to distribute long-term infrastructure costs across generations that benefit from them",
+        "Minister Hermans (Government)": "Analysis showed longer amortization periods would unfairly shift burden to future generations"
+      },
+      "outcome": "Amortization strategy rejected after government analysis demonstrated it would unfairly burden future generations"
+    },
+    {
+      "topic": "Banking Crisis Framework (Wet nadere uitvoering BRRD-implementatie)",
+      "summary": "Technical banking regulation implementing BRRD (Bank Recovery and Resolution Directive) framework.",
+      "party_positions": {},
+      "outcome": "Passed without debate or voting"
+    },
+    {
+      "topic": "Industrial Sustainability and Sectoral Agreements",
+      "summary": "Continued use of sectoral table approach (NPVI) for industrial sustainability with customized agreement mechanisms for major industrial emitters like Nobian and Tata, emphasizing reciprocal responsibility.",
+      "party_positions": {},
+      "outcome": "Sectoral table approach (NPVI) maintained for industrial sustainability; customized agreement mechanism continued for major industrial emitters despite noted complications"
+    }
+  ],
+  "key_decisions": [
+    "Box 3 wealth tax reform: Nine amendments rejected; only evaluation amendment accepted (three-year review required)",
+    "Banking crisis framework bill passed without opposition",
+    "Grid investment amortization strategy rejected due to unfair burden on future generations",
+    "Gas storage fill target adjusted upward for November 1, 2026",
+    "Strategic gas reserves enabled by law in 2026 with first refilling committed",
+    "North Sea gas production accelerated through operator agreements",
+    "5% revenue-sharing agreement finalized for new onshore gas extraction (up to 2 billion cubic meters)",
+    "Three-pronged TenneT grid crisis response: validation of calculations, preventive measures identification, region-specific solutions",
+    "Sectoral table approach (NPVI) maintained for industrial sustainability",
+    "Customized agreement mechanism continued for major industrial emitters (Nobian, Tata)"
+  ],
+  "political_dynamics": "The session revealed a clear left-right divide on wealth taxation and energy costs. Progressive parties (SP, GroenLinks-PvdA, PvdD, DENK) pushed for stronger wealth redistribution measures, while conservative parties (VVD, CDA, JA21, BBB) resisted progressive taxation. On energy policy, broader consensus existed on the need for action, though disagreement persisted on implementation approaches—particularly regarding market mechanisms versus government mandates and cost distribution across generations. The SGP presented a pragmatic middle position, accepting the general direction of reforms while insisting on fiscal responsibility. Coalition dynamics appeared stable, with government measures proceeding despite opposition amendments, though the deferral of increased housing program funding to the successor suggests some internal budget constraints.",
+  "next_steps": [
+    "Three-year evaluation of Box 3 wealth tax reform implementation to be conducted (van Dijk amendment)",
+    "Government to validate TenneT's grid congestion calculations and consult with affected provinces before implementing connection freeze",
+    "Implementation of three-pronged response to grid capacity: calculation validation, preventive measures identification, and region-specific solutions",
+    "First refilling of strategic gas reserves committed for 2026",
+    "Continued acceleration of North Sea gas production under operator agreements",
+    "Successor government to determine funding level for gas-free rental housing program within proper budgetary process",
+    "Continued monitoring of industrial sustainability through sectoral table approach with major emitters"
+  ],
+  "meeting_info": {
+    "vergadering_titel": "43e vergadering, donderdag 12 februari 2026",
+    "vergadering_datum": "2026-02-12T00:00:00+01:00",
+    "verslag_id": "8248682a-ef68-4b98-bf4d-8c507a4c8277",
+    "status": "VerslagStatus.ONGECORRIGEERD"
+  },
+  "processing_info": {
+    "chunks_processed": 11,
+    "total_topics_found": 81,
+    "processing_date": "2026-04-06T18:46:04.717520"
+  }
+}

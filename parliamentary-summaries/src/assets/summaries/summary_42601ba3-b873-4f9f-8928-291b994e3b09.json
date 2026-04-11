@@ -1,0 +1,76 @@
+{
+  "executive_summary": "The 42nd parliamentary session on February 11, 2026 addressed 82 topics with 75 decisions made, spanning education policy, LGBTIQ+ youth attitudes, and labor negotiations. Key debates centered on transparency in education collective bargaining negotiations, declining youth acceptance of LGBTIQ+ persons, and education system adequacy in the Caribbean Netherlands. The session reflected tensions between government confidentiality concerns and parliamentary demands for transparency and comprehensive policy responses.",
+  "main_topics": [
+    {
+      "topic": "Confidential Information Sharing for Education Collective Bargaining (CAO)",
+      "summary": "Parliament debated whether the government should share its 'cabinet contribution labor conditions development' letter with education trade unions to create equal negotiating positions. Currently, only employers receive this information, placing unions at a disadvantage. GroenLinks-PvdA argued for transparency and direct sharing with unions, while the government maintained that confidentiality is necessary to protect employer positions across multiple sectors (education, government, police, defense, judiciary) and cited an ongoing court case challenging the confidentiality requirement.",
+      "party_positions": {
+        "GroenLinks-PvdA (Moorman)": "Supports transparency and equal negotiating positions; proposes direct sharing of cabinet letter with education trade unions and consultation with MBO councils and universities",
+        "Government (State Secretary Becking)": "Opposes disclosure citing financial state interests and protection of employer negotiation positions across multiple sectors; awaits court ruling on confidentiality"
+      },
+      "outcome": "Motion 27923, nr. 520 held in abeyance pending court ruling on confidentiality; Motion 27923, nr. 521 referred to parliamentary judgment regarding consultation with educational institutions"
+    },
+    {
+      "topic": "Youth Attitudes Toward LGBTIQ+ Persons",
+      "summary": "Parliament examined declining acceptance of LGBTIQ+ persons among youth, with only 43% accepting homosexuality. Discussion focused on research methodology, investigation of contributing factors (particularly manosphere influence), and appropriate policy responses. Parties debated whether the research adequately captures all influencing factors and whether specific population subgroups should be examined.",
+      "party_positions": {
+        "BBB (Van der Plas)": "Emphasized importance of examining manosphere influence specifically on youth attitudes",
+        "VVD (Martens-America)": "Sought clarity on research scope and whether all population groups are included in analysis",
+        "GroenLinks-PvdA (Tseggai)": "Concerned with comprehensive response to declining acceptance trends",
+        "Government (State Secretary Becking)": "Confirmed University of Amsterdam will conduct additional research with explicit focus on manosphere; emphasized research examines overall youth attitudes toward LGBTIQ+ persons with all contributing factors"
+      },
+      "outcome": "Motion 30420, nr. 440 granted parliamentary judgment (VNG consultation); Motion 30420, nr. 441 deemed untimely; Motion 30420, nr. 442 advised against; Motion 30420, nr. 443 withdrawn after government commitment to examine manosphere explicitly"
+    },
+    {
+      "topic": "Education System Appropriateness in Caribbean Netherlands",
+      "summary": "Parliament raised concerns about whether current Dutch examination systems adequately serve students in the Caribbean Netherlands. GroenLinks-PvdA expressed frustration that government response to a comprehensive white motion only addressed after-school care, not the broader examination system issues.",
+      "party_positions": {
+        "GroenLinks-PvdA (Tseggai)": "Demanded comprehensive government response to white motion on Caribbean Netherlands education; criticized insufficient focus on examination systems",
+        "Government (State Secretary Becking)": "Confirmed education agendas cover required themes; committed to written explanation of how motion requirements are met"
+      },
+      "outcome": "Motion 36800-VIII, nr. 80 granted parliamentary judgment; government to provide written explanation of current monitoring practices"
+    },
+    {
+      "topic": "Education as Investment and Broad Welfare Measurement",
+      "summary": "Parliament debated whether education should be measured through broader welfare indicators rather than traditional metrics. GroenLinks-PvdA proposed adding the Education Ministry (OCW) to budget scope study discussions to emphasize education's value beyond conventional measurements.",
+      "party_positions": {
+        "GroenLinks-PvdA (Moorman)": "Advocates for including OCW in budget discussions to measure education's impact on broad welfare; emphasizes education as investment",
+        "Government (Minister Moes)": "Declines mandatory OCW participation in independent study group but commits to raising request with study group leadership and providing written explanation of existing monitoring practices"
+      },
+      "outcome": "Motion 36800-VIII, nr. 81 converted to speaking motion; Motion 36800-VIII, nr. 82 held in abeyance pending government's written explanation"
+    }
+  ],
+  "key_decisions": [
+    "Motion 27923, nr. 520: Information sharing on education CAO held in abeyance pending court ruling on confidentiality",
+    "Motion 27923, nr. 521: Consultation with MBO councils and universities on information sharing referred to parliamentary judgment",
+    "Motion 30420, nr. 440: VNG consultation on LGBTIQ+ discrimination granted parliamentary judgment",
+    "Motion 30420, nr. 441: SCP research motion on specific declining acceptance areas deemed untimely",
+    "Motion 30420, nr. 442: Legal framework for youth opinion research advised against (existing legal basis cited)",
+    "Motion 30420, nr. 443: Manosphere research motion withdrawn after government commitment to explicit examination",
+    "Motion 36800-VIII, nr. 80: Research on Caribbean Netherlands examination systems granted parliamentary judgment",
+    "Motion 36800-VIII, nr. 81: OCW budget study group participation converted to speaking motion",
+    "Motion 36800-VIII, nr. 82: Annual education policy reporting held in abeyance pending government explanation",
+    "Minister Moes advised against motion 566 on special Prinsenhof funding"
+  ],
+  "political_dynamics": "The session revealed a coalition government (represented by State Secretary Becking and Minister Moes) taking defensive positions on transparency and comprehensive policy responses, while GroenLinks-PvdA consistently pushed for greater openness and broader welfare-focused approaches. BBB and VVD raised specific concerns about research methodology and scope. The government frequently deferred to ongoing court cases, independent studies, and written explanations rather than making immediate commitments, suggesting internal constraints or cautious budgetary positioning. Multiple motions were held in abeyance or converted to speaking motions, indicating parliamentary skepticism about government responsiveness.",
+  "next_steps": [
+    "Court ruling expected on confidentiality of cabinet contribution letter for CAO negotiations",
+    "University of Amsterdam to conduct research on youth attitudes toward LGBTIQ+ persons with explicit manosphere focus",
+    "Government to provide written explanation of monitoring practices for education policy effects on broad welfare",
+    "Government to submit written clarification on how Caribbean Netherlands education motion requirements are being met",
+    "Parliamentary judgment pending on VNG consultation regarding LGBTIQ+ discrimination and youth acceptance",
+    "Parliamentary judgment pending on research on appropriate examination systems for Caribbean Netherlands students",
+    "Government to raise OCW inclusion request with Budget Scope Study Group leadership"
+  ],
+  "meeting_info": {
+    "vergadering_titel": "42e vergadering, woensdag 11 februari 2026",
+    "vergadering_datum": "2026-02-11T00:00:00+01:00",
+    "verslag_id": "42601ba3-b873-4f9f-8928-291b994e3b09",
+    "status": "VerslagStatus.ONGECORRIGEERD"
+  },
+  "processing_info": {
+    "chunks_processed": 14,
+    "total_topics_found": 82,
+    "processing_date": "2026-04-06T18:56:28.650918"
+  }
+}

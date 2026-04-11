@@ -1,0 +1,114 @@
+{
+  "executive_summary": "The 61st Dutch parliamentary session on April 8, 2026, addressed 67 topics with 52 decisions, focusing primarily on AI strategy and labor market impacts, agricultural compensation issues, and maritime/water infrastructure matters. Key debates centered on the government's coordination of AI adoption, fair compensation for affected farmers, and various infrastructure financing commitments, with several motions scheduled for voting on April 14, 2026.",
+  "main_topics": [
+    {
+      "topic": "AI Strategy and Labor Market Impact",
+      "summary": "Parliament debated the government's approach to artificial intelligence adoption and its effects on employment. GroenLinks-PvdA emphasized AI's significant employment impact and advocated for mandatory sectoral action plans with employee participation rights. CDA cautioned against spreading resources too thin, recommending focus on Netherlands' unique strengths like semiconductors. D66 stressed responsible AI governance through public-private collaboration and ensuring Dutch access to EU AI funds. Government committed to presenting detailed industrial policy sectoral plans in autumn 2026.",
+      "party_positions": {
+        "GroenLinks-PvdA (Kathmann)": "Demands mandatory sectoral plans with social dialogue, mediation rights for workers, and identification of AI applications to avoid; emphasizes AI's massive employment impact",
+        "CDA (Zwinkels)": "Supports AI ambition but insists on strategic prioritization; Netherlands should focus on unique strengths rather than pursuing leadership across all AI areas",
+        "D66 (El Boujdaini)": "Advocates for responsible AI governance via public-private collaboration with clear oversight; ensures complementarity between national and European AI programs",
+        "Government": "Prefers sectoral ownership; committed to Parliament communication after SER discussions and autumn 2026 detailed policy announcements"
+      },
+      "outcome": "Motion 4303 (Kathmann/Patijn) on AI sectoral plans opposed by government but scheduled for April 14 vote. Government commits to Parliament briefing after SER consultations and autumn presentation of detailed industrial policy sectoral plans including AI/digitalization priorities."
+    },
+    {
+      "topic": "Fur Farmer Compensation",
+      "summary": "Contentious debate over government's refusal to equally compensate all fur farmers affected by the industry shutdown. BBB's Van der Plas argued for moral obligation to compensate all farmers regardless of cost, criticizing the government's position that non-appealing farmers implicitly accepted original terms. Government (Erkens) maintained the original compensation was fair and disputes claims farmers were prevented from appealing. Estimated additional cost for extending compensation: €25 million for 92 farmers.",
+      "party_positions": {
+        "BBB (Van der Plas)": "Emphasizes moral obligation to equally compensate all farmers; criticizes dehumanizing focus on 'casussen' rather than people and families",
+        "CDA (Koorevaar)": "Seeks pragmatic fiscal data while sympathetic to moral concerns",
+        "Government (Erkens)": "Maintains original compensation was fair; disputes Van der Plas's claim that farmers were prevented from appealing"
+      },
+      "outcome": "Motion 26 (Van der Plas) on equal compensation opposed by government. Vote scheduled for April 14, 2026. Government advises against expansion of compensation scheme."
+    },
+    {
+      "topic": "Wadden Dike Normalization",
+      "summary": "Discussion of the Wadden Dike normalization process and associated financing. Minister committed not to take irreversible steps before technical briefing and commission debate on Water. May 2026 update letter on financing promised.",
+      "party_positions": {
+        "Government": "Seeks measured approach with stakeholder consultation before irreversible decisions"
+      },
+      "outcome": "Minister commits to technical briefing, commissie debate before irreversible actions; May update letter on financing to be provided."
+    },
+    {
+      "topic": "Willem Barentszkade Infrastructure Financing",
+      "summary": "Resolution of financing mechanisms for Willem Barentszkade project requiring coordination between national government, provincial, and municipal authorities.",
+      "party_positions": {
+        "Government": "Committed to shared responsibility financing model"
+      },
+      "outcome": "Minister commits to finalize financial solution by May with shared responsibility among Rijk, province, and municipality."
+    },
+    {
+      "topic": "Water Taxi Night Operations",
+      "summary": "Debate over permitting water taxi night operations at elevated speeds once environmental studies conclude favorably.",
+      "party_positions": {
+        "Government": "Willing to permit operations pending environmental approval"
+      },
+      "outcome": "Minister commits to tolerance of 40 km/h night speed once environmental study results are positive; legalization pending."
+    },
+    {
+      "topic": "Biofuels in Ferry Service Tenders",
+      "summary": "Discussion on whether biofuels should be mandated in Wadden ferry service concession requirements.",
+      "party_positions": {
+        "Government": "Opposes mandatory biofuel requirements"
+      },
+      "outcome": "Minister agrees not to mandate biofuels in Wadden ferry service concessions."
+    },
+    {
+      "topic": "Maritime Security",
+      "summary": "Comprehensive debate on port resilience, designation of critical maritime entities, and foreign ownership concerns in Dutch maritime infrastructure.",
+      "party_positions": {
+        "Government": "Supportive of maritime security enhancements"
+      },
+      "outcome": "Minister agrees to all maritime security motions on port resilience, designation of critical entities, and foreign ownership oversight."
+    },
+    {
+      "topic": "Damage Restoration Law",
+      "summary": "Legislation establishing 'actual damage restoration' mechanisms with compensation up to €60,000 without requiring proof of causal link.",
+      "party_positions": {
+        "Government": "Supports streamlined compensation framework"
+      },
+      "outcome": "Law establishes 'actual damage restoration' without requiring proof of causal link (up to €60,000)."
+    },
+    {
+      "topic": "Government Care Duties (Zorgplichten)",
+      "summary": "Legislation introducing two government 'care duties': one to fulfill social and economic agenda, one to ensure sustainable housing.",
+      "party_positions": {
+        "Government": "Accepts dual care duty framework"
+      },
+      "outcome": "Law introduces two 'care duties' (zorgplichten) for government: one to fulfill social/economic agenda, one to ensure sustainable housing."
+    }
+  ],
+  "key_decisions": [
+    "Motion 4303 (Kathmann/Patijn) on AI sectoral plans opposed by government; vote April 14, 2026; government commits to Parliament communication after SER discussions",
+    "Motion 26 (Van der Plas) on equal fur farmer compensation opposed by government (€25M estimated additional cost); vote April 14, 2026",
+    "Autumn 2026 government presentation of detailed industrial policy sectoral plans including AI/digitalization priorities and NTS AI & Data Action Agenda",
+    "Wadden Dike Normalization: Minister commits to technical briefing and commissie debate before irreversible steps; May update letter on financing",
+    "Willem Barentszkade: Minister commits to finalize financial solution by May with shared Rijk-province-municipality responsibility",
+    "Water Taxi: Minister commits to tolerance of 40 km/h night operations pending positive environmental study results; legalization pending",
+    "Biofuels: Minister agrees not to mandate biofuels in Wadden ferry service concessions",
+    "Maritime Security: Minister agrees to all motions on port resilience, critical entity designation, and foreign ownership concerns",
+    "Law establishes 'actual damage restoration' without requiring causal link proof (up to €60,000)",
+    "Law introduces dual government 'care duties': social/economic agenda fulfillment and sustainable housing provision"
+  ],
+  "political_dynamics": "The session revealed diverse coalition perspectives on AI strategy with broad agreement on responsible governance but disagreement on government coordination levels. GroenLinks-PvdA pushed for stronger labor protections and sectoral planning, while CDA advocated for strategic focus and D66 emphasized public-private collaboration. The fur farmer compensation issue created significant tension, with BBB emotionally emphasizing moral obligations while the government maintained fiscal prudence and legal consistency. On maritime and infrastructure matters, there was greater consensus, with government accepting most security and environmental commitments. Notable procedural friction emerged between GroenLinks-PvdA and BBB regarding autonomous shipping discussion relevance. Overall, the coalition demonstrated willingness to commit to future detailed planning (autumn 2026) rather than immediate comprehensive decisions.",
+  "next_steps": [
+    "April 14, 2026: Parliamentary vote on Motion 4303 (AI sectoral plans) and Motion 26 (fur farmer compensation)",
+    "May 2026: Government update letter on Wadden Dike financing; finalization of Willem Barentszkade financial solution",
+    "May 2026: Environmental study results on water taxi night operations expected; legalization decision to follow",
+    "Autumn 2026: Government presentation of detailed industrial policy sectoral plans with AI/digitalization priorities and NTS AI & Data Action Agenda specifics",
+    "Ongoing: SER (Social and Economic Council) discussions on AI sectoral action plans; Parliament to be briefed on outcomes",
+    "Ongoing: Technical briefing and commissie debate on Water regarding Wadden Dike normalization process"
+  ],
+  "meeting_info": {
+    "vergadering_titel": "61e vergadering, woensdag 8 april 2026",
+    "vergadering_datum": "2026-04-08T00:00:00+02:00",
+    "verslag_id": "d770cca0-27f3-4059-bbf2-107e0e246dbe",
+    "status": "VerslagStatus.ONGECORRIGEERD"
+  },
+  "processing_info": {
+    "chunks_processed": 12,
+    "total_topics_found": 67,
+    "processing_date": "2026-04-11T21:03:41.335806"
+  }
+}
