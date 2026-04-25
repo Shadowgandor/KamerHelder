@@ -115,7 +115,7 @@ export class SummaryService {
   private async discoverSummaryFiles(): Promise<SummaryFileInfo[]> {
     // Method 1: Try to load a detailed manifest file
     try {
-      const manifestResponse = await this.http.get<{files: string[], count: number, generated: string}>('/assets/summaries/manifest.json').toPromise();
+      const manifestResponse = await this.http.get<{files: string[], count: number, generated: string}>('assets/summaries/manifest.json').toPromise();
       if (manifestResponse && manifestResponse.files) {
         console.log(`Found manifest with ${manifestResponse.count} files (generated: ${manifestResponse.generated})`);
         return this.parseFileNames(manifestResponse.files);
@@ -126,7 +126,7 @@ export class SummaryService {
 
     // Method 2: Try simple file list
     try {
-      const fileList = await this.http.get<string[]>('/assets/summaries/file-list.json').toPromise();
+      const fileList = await this.http.get<string[]>('assets/summaries/file-list.json').toPromise();
       if (fileList && fileList.length > 0) {
         console.log(`Found simple file list with ${fileList.length} files`);
         return this.parseFileNames(fileList);
@@ -197,7 +197,7 @@ export class SummaryService {
    * Load a single summary file
    */
   private loadSingleSummaryFile(fileInfo: SummaryFileInfo): Observable<ParliamentaryDocument | null> {
-    const url = `/assets/summaries/${fileInfo.filename}`;
+    const url = `assets/summaries/${fileInfo.filename}`;
     
     return this.http.get<ParliamentarySummary>(url).pipe(
       map(summary => {
