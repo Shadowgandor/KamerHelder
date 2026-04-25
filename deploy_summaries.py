@@ -32,9 +32,10 @@ def main():
         copied.append(src.name)
         print(f"  Copied: {src.name}")
 
+    all_files = sorted(f.name for pattern in PATTERNS for f in ASSETS_DIR.glob(pattern))
     manifest = {
-        "files": sorted(copied),
-        "count": len(copied),
+        "files": all_files,
+        "count": len(all_files),
         "generated": datetime.now().isoformat(),
     }
     manifest_path = ASSETS_DIR / "manifest.json"
