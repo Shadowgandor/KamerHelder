@@ -1,434 +1,174 @@
-<!-- src/app/app.component.html - Updated with loading states -->
-
 <div class="app-container">
-  <!-- Material Toolbar -->
-  <mat-toolbar color="primary" class="app-toolbar">
+  <mat-toolbar class="app-toolbar">
     <mat-icon class="toolbar-icon">account_balance</mat-icon>
-    <span class="toolbar-title">Parliamentary Summaries</span>
+    <span class="toolbar-title">KamerHelder</span>
     <span class="toolbar-spacer"></span>
-    
-    <!-- Filter Toggle -->
-    <mat-icon
-      class="filter-toggle"
-      [matTooltip]="showFilters ? 'Hide Filters' : 'Show Filters'"
-      (click)="toggleFilters()"
-      style="cursor: pointer;">
-      search
-    </mat-icon>
+    <span *ngIf="documentStats$ | async as stats" class="toolbar-stats">
+      {{ stats.totalDocuments }} vergaderingen &middot; {{ stats.totalTopics }} onderwerpen
+    </span>
   </mat-toolbar>
 
-  <!-- Loading Progress Bar -->
   <mat-progress-bar *ngIf="loading$ | async" mode="indeterminate" color="accent"></mat-progress-bar>
 
-  <!-- Subtitle -->
-  <div class="app-subtitle">
-    <p>Neutral, comprehensive summaries of Tweede Kamer debates with detailed context</p>
-    <div *ngIf="documentStats$ | async as stats" class="stats-chips">
-      <mat-chip-listbox>
-        <mat-chip>
-          <mat-icon matChipAvatar>event_note</mat-icon>
-          {{ stats.totalDocuments }} meetings
-        </mat-chip>
-        <mat-chip>
-          <mat-icon matChipAvatar>topic</mat-icon>
-          {{ stats.totalTopics }} topics
-        </mat-chip>
-        <mat-chip>
-          <mat-icon matChipAvatar>groups</mat-icon>
-          {{ stats.uniqueParties }} parties
-        </mat-chip>
-        <mat-chip *ngIf="stats.dateRange">
-          <mat-icon matChipAvatar>date_range</mat-icon>
-          {{ stats.dateRange.earliest | date:'dd/MM/yyyy' }} - {{ stats.dateRange.latest | date:'dd/MM/yyyy' }}
-        </mat-chip>
-      </mat-chip-listbox>
+  <div class="workspace">
+    <!-- Left panel: search + document list -->
+    <div class="list-panel">
+      <div class="list-search">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Zoeken...</mat-label>
+          <input matInput
+                 [ngModel]="searchQuery"
+                 (ngModelChange)="onSearchChangeDebounced($event)">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Loading state -->
+      <div *ngIf="loading$ | async" class="list-loading">
+        <mat-spinner diameter="32"></mat-spinner>
+        <span>Documenten laden...</span>
+      </div>
+
+      <!-- Error state -->
+      <div *ngIf="error$ | async as error" class="list-error">
+        <mat-icon color="warn">error_outline</mat-icon>
+        <span>{{ error }}</span>
+        <button mat-button color="primary" (click)="onRefreshDocuments()">Opnieuw</button>
+      </div>
+
+      <!-- Document list -->
+      <div class="document-list" *ngIf="!(loading$ | async)">
+        <div *ngIf="documents$ | async as documents">
+          <div *ngIf="documents.length === 0" class="empty-list">
+            <mat-icon>inbox</mat-icon>
+            <p>Geen documenten gevonden</p>
+          </div>
+
+          <div
+            *ngFor="let document of documents; trackBy: trackByDocumentId"
+            class="list-item"
+            [class.active]="selectedDocumentId === document.id"
+            (click)="onDocumentSelected(document)"
+            matRipple>
+            <div class="list-item-date">{{ document.formattedDate }}</div>
+            <div class="list-item-title">{{ document.title }}</div>
+            <div class="list-item-meta">
+              <span><mat-icon>topic</mat-icon>{{ document.topicCount }}</span>
+              <span><mat-icon>check_circle</mat-icon>{{ document.decisionCount }}</span>
+              <span class="list-item-model">{{ document.summary.processing_info.ai_model || 'AI' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right panel: document detail -->
+    <div class="detail-panel">
+      <div *ngIf="!(selectedDocument$ | async)" class="detail-empty">
+        <mat-icon>article</mat-icon>
+        <p>Selecteer een vergadering om de samenvatting te bekijken</p>
+      </div>
+
+      <div *ngIf="selectedDocument$ | async as doc" class="detail-content">
+        <!-- Header -->
+        <div class="detail-header">
+          <h1 class="detail-title">{{ doc.title }}</h1>
+          <div class="detail-subtitle">{{ doc.formattedDate }}</div>
+        </div>
+
+        <!-- Executive Summary -->
+        <section class="detail-section">
+          <h2><mat-icon>summarize</mat-icon> Samenvatting</h2>
+          <p class="executive-summary">{{ doc.summary.executive_summary }}</p>
+        </section>
+
+        <!-- Political Dynamics -->
+        <section *ngIf="doc.summary.political_dynamics" class="detail-section dynamics-section">
+          <h2><mat-icon>balance</mat-icon> Politieke dynamiek</h2>
+          <p>{{ doc.summary.political_dynamics }}</p>
+        </section>
+
+        <!-- Topics -->
+        <section class="detail-section">
+          <h2><mat-icon>topic</mat-icon> Hoofdonderwerpen ({{ doc.summary.main_topics.length }})</h2>
+          <mat-accordion multi>
+            <mat-expansion-panel
+              *ngFor="let topic of doc.summary.main_topics; trackBy: trackByTopicName"
+              class="topic-panel">
+              <mat-expansion-panel-header>
+                <mat-panel-title>{{ topic.topic }}</mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <!-- Context -->
+              <div *ngIf="topic.hasContext" class="topic-context">
+                <div *ngIf="topic.context?.why_discussed" class="context-item">
+                  <strong>Aanleiding</strong>
+                  <p>{{ topic.context?.why_discussed }}</p>
+                </div>
+                <div *ngIf="topic.context?.background" class="context-item">
+                  <strong>Achtergrond</strong>
+                  <p>{{ topic.context?.background }}</p>
+                </div>
+                <div *ngIf="topic.context?.stakes" class="context-item">
+                  <strong>Belang</strong>
+                  <p>{{ topic.context?.stakes }}</p>
+                </div>
+              </div>
+
+              <p class="topic-summary-text">{{ topic.summary }}</p>
+
+              <!-- Party positions -->
+              <div class="party-positions" *ngIf="topic.partyPositionsArray?.length">
+                <h4>Fracties</h4>
+                <div class="positions-grid">
+                  <div
+                    *ngFor="let pos of topic.partyPositionsArray; trackBy: trackByPartyName"
+                    class="position-card">
+                    <div class="party-badge" [style.background-color]="pos.color">{{ pos.party }}</div>
+                    <p class="main-position">{{ pos.mainPosition }}</p>
+                    <div *ngIf="pos.reasoning" class="pos-detail reasoning-text">{{ pos.reasoning }}</div>
+                    <div *ngIf="pos.evidence" class="pos-detail evidence-text">{{ pos.evidence }}</div>
+                    <div *ngIf="pos.hasProposals" class="proposals">
+                      <span *ngFor="let p of pos.proposals; trackBy: trackByIndex" class="proposal-chip">{{ p }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Outcome -->
+              <div *ngIf="topic.outcome" class="outcome">
+                <mat-icon>assignment_turned_in</mat-icon>
+                <p>{{ topic.outcome }}</p>
+              </div>
+            </mat-expansion-panel>
+          </mat-accordion>
+        </section>
+
+        <!-- Key Decisions -->
+        <section *ngIf="doc.hasDecisions" class="detail-section">
+          <h2><mat-icon>check_circle</mat-icon> Besluiten ({{ doc.summary.key_decisions.length }})</h2>
+          <ul class="decisions-list">
+            <li *ngFor="let d of doc.summary.key_decisions; trackBy: trackByIndex">{{ d }}</li>
+          </ul>
+        </section>
+
+        <!-- Next Steps -->
+        <section *ngIf="doc.hasNextSteps" class="detail-section">
+          <h2><mat-icon>schedule</mat-icon> Vervolgstappen ({{ doc.summary.next_steps.length }})</h2>
+          <ul class="decisions-list">
+            <li *ngFor="let s of doc.summary.next_steps; trackBy: trackByIndex">{{ s }}</li>
+          </ul>
+        </section>
+
+        <!-- Processing info -->
+        <section class="detail-section processing-section">
+          <div class="processing-chips">
+            <span class="proc-chip">{{ doc.summary.processing_info.chunks_processed }} chunks</span>
+            <span class="proc-chip">{{ doc.summary.processing_info.ai_model || 'AI' }}</span>
+            <span class="proc-chip">{{ doc.processingDate }}</span>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
-
-  <mat-sidenav-container class="main-container">
-    <!-- Filters Sidebar -->
-    <mat-sidenav 
-      [opened]="showFilters" 
-      mode="side" 
-      class="filters-sidenav"
-      position="start">
-      
-      <div class="filters-content">
-        <!-- Search Section -->
-        <mat-card class="filter-card">
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>search</mat-icon>
-              Search
-            </mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Search summaries...</mat-label>
-              <input matInput 
-                     [ngModel]="searchQuery"
-                     (ngModelChange)="onSearchChangeDebounced($event)">
-              <mat-icon matSuffix>search</mat-icon>
-            </mat-form-field>
-          </mat-card-content>
-        </mat-card>
-      </div>
-    </mat-sidenav>
-
-    <!-- Main Content -->
-    <mat-sidenav-content class="main-content">
-      
-      <!-- Loading State -->
-      <div *ngIf="loading$ | async" class="loading-container">
-        <mat-card class="loading-card">
-          <mat-card-content>
-            <div class="loading-content">
-              <mat-spinner diameter="50"></mat-spinner>
-              <h3>Loading Parliamentary Documents...</h3>
-              <p>Discovering and processing summary files...</p>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
-
-      <!-- Error State -->
-      <div *ngIf="error$ | async as error" class="error-container">
-        <mat-card class="error-card">
-          <mat-card-header>
-            <mat-icon mat-card-avatar color="warn">error</mat-icon>
-            <mat-card-title>Loading Issue</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <p>{{ error }}</p>
-            <button mat-raised-button color="primary" (click)="onRefreshDocuments()">
-              <mat-icon>refresh</mat-icon>
-              Try Again
-            </button>
-          </mat-card-content>
-        </mat-card>
-      </div>
-
-      <!-- Document List -->
-      <div *ngIf="!(loading$ | async)">
-        <mat-card class="documents-card">
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>event_note</mat-icon>
-              Parliamentary Meetings
-              <span *ngIf="documents$ | async as documents" class="document-count">
-                ({{ documents.length }})
-              </span>
-            </mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="documents-grid" *ngIf="documents$ | async as documents">
-              <div *ngIf="documents.length === 0" class="no-documents">
-                <mat-icon>inbox</mat-icon>
-                <h3>No documents found</h3>
-                <p>Try adjusting your filters or refresh the data.</p>
-                <button mat-raised-button color="primary" (click)="onRefreshDocuments()">
-                  <mat-icon>refresh</mat-icon>
-                  Refresh
-                </button>
-              </div>
-              
-              <mat-card 
-                *ngFor="let document of documents; trackBy: trackByDocumentId" 
-                class="document-card"
-                [class.selected]="selectedDocumentId === document.id"
-                (click)="onDocumentSelected(document)"
-                style="cursor: pointer;"
-                matRipple>
-                
-                <mat-card-header>
-                  <mat-card-title class="document-title">{{ document.title }}</mat-card-title>
-                  <mat-card-subtitle>{{ document.formattedDate }}</mat-card-subtitle>
-                </mat-card-header>
-                
-                <mat-card-content>
-                  <p class="document-preview">
-                    {{ document.preview }}...
-                  </p>
-                </mat-card-content>
-                
-                <mat-card-actions class="document-stats">
-                  <mat-chip-listbox>
-                    <mat-chip>
-                      <mat-icon matChipAvatar>topic</mat-icon>
-                      {{ document.topicCount }} topics
-                    </mat-chip>
-                    <mat-chip>
-                      <mat-icon matChipAvatar>check_circle</mat-icon>
-                      {{ document.decisionCount }} decisions
-                    </mat-chip>
-                    <mat-chip *ngIf="document.hasNextSteps">
-                      <mat-icon matChipAvatar>schedule</mat-icon>
-                      {{ document.nextStepsCount }} next steps
-                    </mat-chip>
-                    <mat-chip>
-                      <mat-icon matChipAvatar>smart_toy</mat-icon>
-                      {{ document.summary.processing_info.ai_model || 'AI' }}
-                    </mat-chip>
-                  </mat-chip-listbox>
-                </mat-card-actions>
-              </mat-card>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <!-- Document Detail -->
-        <div *ngIf="selectedDocument$ | async as selectedDocument" class="document-detail">
-          
-          <!-- Header -->
-          <mat-card class="detail-header-card">
-            <mat-card-header>
-              <mat-icon mat-card-avatar>account_balance</mat-icon>
-              <mat-card-title>{{ selectedDocument.title }}</mat-card-title>
-              <mat-card-subtitle>{{ selectedDocument.formattedDate }}</mat-card-subtitle>
-            </mat-card-header>
-          </mat-card>
-
-          <!-- Executive Summary -->
-          <mat-card class="summary-card">
-            <mat-card-header>
-              <mat-card-title>
-                <mat-icon>summarize</mat-icon>
-                Executive Summary
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <p class="executive-summary">{{ selectedDocument.summary.executive_summary }}</p>
-            </mat-card-content>
-          </mat-card>
-
-          <!-- Topics -->
-          <mat-card class="topics-card">
-            <mat-card-header>
-              <mat-card-title>
-                <mat-icon>topic</mat-icon>
-                Main Topics ({{ selectedDocument.summary.main_topics.length }})
-              </mat-card-title>
-            </mat-card-header>
-            
-            <mat-card-content>
-              <div class="topics-list">
-                <mat-card 
-                  *ngFor="let topic of selectedDocument.summary.main_topics; trackBy: trackByTopicName"
-                  class="topic-card-simple">
-                  <ng-container *ngTemplateOutlet="topicTemplate; context: { topic: topic }"></ng-container>
-                </mat-card>
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-          <!-- Key Decisions -->
-          <mat-card *ngIf="selectedDocument.hasDecisions" class="decisions-card">
-            <mat-card-header>
-              <mat-card-title>
-                <mat-icon>check_circle</mat-icon>
-                Key Decisions ({{ selectedDocument.summary.key_decisions.length }})
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <mat-list class="decisions-list">
-                <mat-list-item *ngFor="let decision of selectedDocument.summary.key_decisions; trackBy: trackByIndex">
-                  <mat-icon matListItemIcon>done</mat-icon>
-                  <div matListItemTitle>{{ decision }}</div>
-                </mat-list-item>
-              </mat-list>
-            </mat-card-content>
-          </mat-card>
-
-          <!-- Political Dynamics -->
-          <mat-card *ngIf="selectedDocument.summary.political_dynamics" class="dynamics-card">
-            <mat-card-header>
-              <mat-card-title>
-                <mat-icon>balance</mat-icon>
-                Political Dynamics
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <p class="dynamics-text">{{ selectedDocument.summary.political_dynamics }}</p>
-            </mat-card-content>
-          </mat-card>
-
-          <!-- Next Steps -->
-          <mat-card *ngIf="selectedDocument.hasNextSteps" class="next-steps-card">
-            <mat-card-header>
-              <mat-card-title>
-                <mat-icon>schedule</mat-icon>
-                Next Steps ({{ selectedDocument.summary.next_steps.length }})
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <mat-list class="next-steps-list">
-                <mat-list-item *ngFor="let step of selectedDocument.summary.next_steps; trackBy: trackByIndex">
-                  <mat-icon matListItemIcon>arrow_forward</mat-icon>
-                  <div matListItemTitle>{{ step }}</div>
-                </mat-list-item>
-              </mat-list>
-            </mat-card-content>
-          </mat-card>
-
-          <!-- Processing Info -->
-          <mat-card class="processing-card">
-            <mat-card-header>
-              <mat-card-title>
-                <mat-icon>smart_toy</mat-icon>
-                Processing Information
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <div class="processing-stats">
-                <mat-chip-listbox>
-                  <mat-chip>
-                    <mat-icon matChipAvatar>analytics</mat-icon>
-                    {{ selectedDocument.summary.processing_info.chunks_processed }} chunks processed
-                  </mat-chip>
-                  <mat-chip>
-                    <mat-icon matChipAvatar>topic</mat-icon>
-                    {{ selectedDocument.summary.processing_info.total_topics_found }} topics found
-                  </mat-chip>
-                  <mat-chip>
-                    <mat-icon matChipAvatar>psychology</mat-icon>
-                    Enhanced with {{ selectedDocument.summary.processing_info.ai_model || 'AI' }}
-                  </mat-chip>
-                  <mat-chip>
-                    <mat-icon matChipAvatar>update</mat-icon>
-                    {{ selectedDocument.processingDate }}
-                  </mat-chip>
-                </mat-chip-listbox>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </div>
-      </div>
-    </mat-sidenav-content>
-  </mat-sidenav-container>
 </div>
-
-<!-- Topic Template (Your Original Design) -->
-<ng-template #topicTemplate let-topic="topic">
-  <mat-card-header>
-    <mat-card-title>
-      <mat-icon class="topic-icon">label</mat-icon>
-      {{ topic.topic }}
-    </mat-card-title>
-  </mat-card-header>
-
-  <mat-card-content>
-    <!-- Topic Context -->
-    <mat-card 
-      *ngIf="displayOptions.topicMode.showContext && topic.hasContext" 
-      class="context-card">
-      <mat-card-header>
-        <mat-card-title>
-          <mat-icon>info</mat-icon>
-          Context
-        </mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div *ngIf="topic.context?.why_discussed" class="context-section">
-          <h4><mat-icon>help</mat-icon> Why Discussed</h4>
-          <p>{{ topic.context.why_discussed }}</p>
-        </div>
-        <mat-divider *ngIf="topic.context?.why_discussed && topic.context?.background"></mat-divider>
-        <div *ngIf="topic.context?.background" class="context-section">
-          <h4><mat-icon>history</mat-icon> Background</h4>
-          <p>{{ topic.context.background }}</p>
-        </div>
-        <mat-divider *ngIf="topic.context?.background && topic.context?.stakes"></mat-divider>
-        <div *ngIf="topic.context?.stakes" class="context-section">
-          <h4><mat-icon>priority_high</mat-icon> Why It Matters</h4>
-          <p>{{ topic.context.stakes }}</p>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
-    <!-- Topic Summary -->
-    <div class="topic-summary">
-      <h4>Discussion Summary</h4>
-      <p>{{ topic.summary }}</p>
-    </div>
-
-    <!-- Party Positions -->
-    <div class="party-positions">
-      <h4>
-        <mat-icon>groups</mat-icon>
-        Party Positions
-      </h4>
-      
-      <div class="positions-grid">
-        <mat-card 
-          *ngFor="let position of topic.partyPositionsArray; trackBy: trackByPartyName" 
-          class="position-card">
-          
-          <mat-card-header>
-            <div 
-              class="party-avatar-badge"
-              [style.background-color]="position.color">
-              {{ position.party }}
-            </div>
-          </mat-card-header>
-          
-          <mat-card-content>
-            <!-- Main Position -->
-            <div class="main-position">
-              <mat-icon class="position-icon">record_voice_over</mat-icon>
-              <span>{{ position.mainPosition }}</span>
-            </div>
-
-            <!-- Specific Proposals -->
-            <div *ngIf="displayOptions.topicMode.showSpecificProposals && position.hasProposals" 
-                 class="specific-proposals">
-              <h5>
-                <mat-icon>lightbulb</mat-icon>
-                Specific Proposals
-              </h5>
-              <mat-chip-listbox>
-                <mat-chip 
-                  *ngFor="let proposal of position.proposals; trackBy: trackByIndex"
-                  class="proposal-chip">
-                  {{ proposal }}
-                </mat-chip>
-              </mat-chip-listbox>
-            </div>
-
-            <!-- Reasoning -->
-            <div *ngIf="displayOptions.topicMode.showReasoning && position.reasoning" 
-                 class="reasoning">
-              <h5>
-                <mat-icon>psychology</mat-icon>
-                Reasoning
-              </h5>
-              <p class="reasoning-text">{{ position.reasoning }}</p>
-            </div>
-
-            <!-- Evidence -->
-            <div *ngIf="displayOptions.topicMode.showEvidence && position.evidence" 
-                 class="evidence">
-              <h5>
-                <mat-icon>fact_check</mat-icon>
-                Evidence Cited
-              </h5>
-              <p class="evidence-text">{{ position.evidence }}</p>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
-    </div>
-
-    <!-- Outcome -->
-    <mat-card *ngIf="topic.outcome" class="outcome-card">
-      <mat-card-header>
-        <mat-card-title>
-          <mat-icon>assignment_turned_in</mat-icon>
-          Outcome
-        </mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p>{{ topic.outcome }}</p>
-      </mat-card-content>
-    </mat-card>
-  </mat-card-content>
-</ng-template>
