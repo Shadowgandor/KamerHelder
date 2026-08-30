@@ -11,14 +11,9 @@ import {
   PartyFilter, 
   SearchFilter,
   EnhancedTopic,
+  SummaryIndexEntry,
   normalizePartyPositions
 } from '../models/parliamentary-summary.model';
-
-interface SummaryFileInfo {
-  filename: string;
-  model: string;
-  id: string;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -29,6 +24,9 @@ export class SummaryService {
   private partyFiltersSubject = new BehaviorSubject<PartyFilter[]>([]);
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private errorSubject = new BehaviorSubject<string | null>(null);
+  /** In-flight summary fetches, keyed by meeting id. */
+  private pendingSummaries = new Map<string, Promise<ParliamentarySummary | null>>();
+
   private searchFilterSubject = new BehaviorSubject<SearchFilter>({
     query: '',
     includeTopics: true,
@@ -62,48 +60,40 @@ export class SummaryService {
   }
 
   /**
-   * Load all summary files from the assets/summaries directory
+   * Load the index and render from it.
+   *
+   * The index (manifest.json) describes every meeting in one request: title,
+   * date, topics, parties and counts. Full summaries are ~9.5 KB each and are
+   * fetched only when a meeting is opened, so the list appears immediately
+   * however many meetings there are.
    */
   private async loadAllSummaryFiles(): Promise<void> {
     this.loadingSubject.next(true);
     this.errorSubject.next(null);
 
     try {
-      const summaryFiles = await this.discoverSummaryFiles();
+      const entries = await this.loadIndex();
 
-      if (summaryFiles.length === 0) {
-        throw new Error('The manifest lists no summaries');
+      if (entries.length === 0) {
+        throw new Error('The index lists no summaries');
       }
 
-      const loadRequests = summaryFiles.map(fileInfo =>
-        this.loadSingleSummaryFile(fileInfo)
-      );
+      const documents: ParliamentaryDocument[] = entries.map(entry => ({
+        id: entry.id,
+        title: entry.title,
+        date: new Date(entry.date || Date.now()),
+        index: entry,
+        summary: null
+      }));
 
-      const results = await forkJoin(loadRequests).toPromise();
-      const validDocuments = (results ?? []).filter(
-        (doc): doc is ParliamentaryDocument => doc !== null
-      );
-
-      if (validDocuments.length === 0) {
-        throw new Error('No summary file could be read');
-      }
-
-      validDocuments.sort((a, b) => b.date.getTime() - a.date.getTime());
-      this.documentsSubject.next(validDocuments);
-      this.initializeEnhancedFilters(validDocuments);
-
-      const failed = summaryFiles.length - validDocuments.length;
-      if (failed > 0) {
-        // Some summaries loaded; say so rather than pretending all is well.
-        this.errorSubject.next(
-          `${failed} van de ${summaryFiles.length} samenvattingen konden niet worden geladen.`
-        );
-      }
+      documents.sort((a, b) => b.date.getTime() - a.date.getTime());
+      this.documentsSubject.next(documents);
+      this.initializeEnhancedFilters(documents);
     } catch (error) {
       // Never substitute placeholder content here. These are summaries of real
       // debates attributed to real parties, and invented stand-ins are
       // indistinguishable from the real thing once the notice disappears.
-      console.error('Error loading summary files:', error);
+      console.error('Error loading the summary index:', error);
       this.documentsSubject.next([]);
       this.errorSubject.next(
         'De samenvattingen konden niet worden geladen. Probeer het opnieuw.'
@@ -114,148 +104,86 @@ export class SummaryService {
   }
 
   /**
-   * List the available summary files.
-   *
    * A browser cannot enumerate a directory, so the build publishes
    * assets/summaries/manifest.json (written by deploy_summaries.py) and that is
    * the only source of truth.
    */
-  private async discoverSummaryFiles(): Promise<SummaryFileInfo[]> {
+  private async loadIndex(): Promise<SummaryIndexEntry[]> {
     const manifest = await this.http
-      .get<{ files: string[]; count: number; generated: string }>(
+      .get<{ summaries?: SummaryIndexEntry[]; count: number; generated: string }>(
         'assets/summaries/manifest.json'
       )
       .toPromise();
 
-    if (!manifest?.files?.length) {
-      throw new Error('manifest.json is empty or missing a files array');
+    if (!manifest?.summaries?.length) {
+      throw new Error('manifest.json is empty or has no summaries array');
     }
 
-    return this.parseFileNames(manifest.files);
+    return manifest.summaries;
   }
 
   /**
-   * Parse filenames to extract model and ID information
+   * Fetch one meeting's full summary, unless it is already loaded.
+   *
+   * Concurrent requests for the same meeting share a single fetch, so
+   * re-selecting a meeting costs nothing.
    */
-  private parseFileNames(filenames: string[]): SummaryFileInfo[] {
-    return filenames
-      .filter(filename => filename.endsWith('.json'))
-      .map(filename => {
-        // Parse pattern: {MODEL}_summary_{ID}.json or {MODEL}_{ID}.json
-        const match = filename.match(/^(.+?)(?:_summary)?_([a-f0-9\-]{36})\.json$/);
-        if (match) {
-          return {
-            filename,
-            model: match[1],
-            id: match[2]
-          };
-        }
-        // Fallback: treat as unknown pattern but still try to load
-        return {
-          filename,
-          model: 'unknown',
-          id: filename.replace('.json', '')
-        };
-      })
-      .filter(info => info.id !== 'unknown'); // Only include properly parsed files
-  }
+  async ensureSummaryLoaded(id: string): Promise<void> {
+    const doc = this.documentsSubject.value.find(d => d.id === id);
 
-  /**
-   * Load a single summary file
-   */
-  private loadSingleSummaryFile(fileInfo: SummaryFileInfo): Observable<ParliamentaryDocument | null> {
-    const url = `assets/summaries/${fileInfo.filename}`;
-    
-    return this.http.get<ParliamentarySummary>(url).pipe(
-      map(summary => {
-        if (!summary || !summary.meeting_info) {
-          console.warn(`Invalid summary structure in ${fileInfo.filename}`);
-          return null;
-        }
+    if (!doc || doc.summary) {
+      return;
+    }
 
-        const document: ParliamentaryDocument = {
-          id: summary.meeting_info.verslag_id || fileInfo.id,
-          title: summary.meeting_info.vergadering_titel || `Meeting ${fileInfo.id}`,
-          date: new Date(summary.meeting_info.vergadering_datum || Date.now()),
-          summary: {
-            ...summary,
-            processing_info: {
-              ...summary.processing_info,
-              ai_model: summary.processing_info.ai_model || fileInfo.model
-            }
-          }
-        };
+    let request = this.pendingSummaries.get(id);
+    if (!request) {
+      request = this.fetchSummary(doc.index);
+      this.pendingSummaries.set(id, request);
+    }
 
-        console.log(`Loaded: ${document.title} (${fileInfo.model})`);
-        return document;
-      }),
-      catchError(error => {
-        console.error(`Failed to load ${fileInfo.filename}:`, error);
-        return of(null);
-      })
+    const summary = await request;
+    this.pendingSummaries.delete(id);
+
+    if (!summary) {
+      this.errorSubject.next(
+        `De samenvatting van "${doc.title}" kon niet worden geladen.`
+      );
+      return;
+    }
+
+    this.documentsSubject.next(
+      this.documentsSubject.value.map(d => (d.id === id ? { ...d, summary } : d))
     );
   }
 
-  /**
-   * Create a helper method to manually load specific files if auto-discovery fails
-   */
-  public async loadSpecificFiles(filenames: string[]): Promise<void> {
-    this.loadingSubject.next(true);
-    this.errorSubject.next(null);
-
-    try {
-      const fileInfos = this.parseFileNames(filenames);
-      const loadRequests = fileInfos.map(fileInfo => this.loadSingleSummaryFile(fileInfo));
-      
-      const results = await forkJoin(loadRequests).toPromise();
-      const validDocuments = results?.filter(doc => doc !== null) as ParliamentaryDocument[];
-
-      if (validDocuments && validDocuments.length > 0) {
-        const currentDocuments = this.documentsSubject.value;
-        const allDocuments = [...currentDocuments, ...validDocuments];
-        
-        // Remove duplicates based on ID
-        const uniqueDocuments = allDocuments.filter((doc, index, arr) => 
-          arr.findIndex(d => d.id === doc.id) === index
-        );
-        
-        // Sort by date
-        uniqueDocuments.sort((a, b) => b.date.getTime() - a.date.getTime());
-        
-        this.documentsSubject.next(uniqueDocuments);
-        this.initializeEnhancedFilters(uniqueDocuments);
-        
-        console.log(`Successfully loaded ${validDocuments.length} additional documents`);
-      }
-    } catch (error) {
-      console.error('Error loading specific files:', error);
-      this.errorSubject.next('Failed to load some files');
-    } finally {
-      this.loadingSubject.next(false);
-    }
+  private fetchSummary(
+    entry: SummaryIndexEntry
+  ): Promise<ParliamentarySummary | null> {
+    return this.http
+      .get<ParliamentarySummary>(`assets/summaries/${entry.file}`)
+      .pipe(
+        catchError(error => {
+          console.error(`Failed to load ${entry.file}:`, error);
+          return of(null);
+        })
+      )
+      .toPromise()
+      .then(summary => summary ?? null);
   }
 
-  /**
-   * Create manifest.json helper method
-   * Call this method to generate a manifest of your files
-   */
-  public generateManifestCode(filenames: string[]): string {
-    const manifest = JSON.stringify(filenames, null, 2);
-    return `Create this file at /assets/summaries/manifest.json:\n\n${manifest}`;
-  }
+
   private initializeEnhancedFilters(documents: ParliamentaryDocument[]): void {
     // Extract unique topics with counts
     const topicCounts = new Map<string, number>();
     const partyCounts = new Map<string, number>();
 
     documents.forEach(doc => {
-      doc.summary.main_topics.forEach(topic => {
-        topicCounts.set(topic.topic, (topicCounts.get(topic.topic) || 0) + 1);
-        
-        normalizePartyPositions(topic.party_positions).forEach(({ party }) => {
-          partyCounts.set(party, (partyCounts.get(party) || 0) + 1);
-        });
-      });
+      doc.index.topics.forEach(topic =>
+        topicCounts.set(topic, (topicCounts.get(topic) || 0) + 1)
+      );
+      doc.index.parties.forEach(party =>
+        partyCounts.set(party, (partyCounts.get(party) || 0) + 1)
+      );
     });
 
     // Create enhanced topic filters
@@ -302,16 +230,13 @@ export class SummaryService {
     const selectedParties = partyFilters.filter(f => f.selected).map(f => f.name);
 
     return documents.filter(doc => {
-      // Apply topic filter
-      const hasSelectedTopic = doc.summary.main_topics.some(topic => 
-        selectedTopics.includes(topic.topic)
+      // Topic and party filters read the index, so they work before a
+      // meeting's full summary has been fetched.
+      const hasSelectedTopic = doc.index.topics.some(topic =>
+        selectedTopics.includes(topic)
       );
-
-      // Apply party filter
-      const hasSelectedParty = doc.summary.main_topics.some(topic =>
-        normalizePartyPositions(topic.party_positions).some(({ party }) =>
-          selectedParties.includes(party)
-        )
+      const hasSelectedParty = doc.index.parties.some(party =>
+        selectedParties.includes(party)
       );
 
       // Apply enhanced search filter
@@ -321,79 +246,54 @@ export class SummaryService {
     });
   }
 
-  private matchesEnhancedSearchQuery(doc: ParliamentaryDocument, searchFilter: SearchFilter): boolean {
-    if (!searchFilter.query.trim()) {
+  /**
+   * Match a meeting against the search box.
+   *
+   * Title, topics, parties and the executive summary come from the index and
+   * are always searchable. The deeper fields — party positions, decisions,
+   * next steps — only exist once the full summary has been fetched, so they
+   * are searched opportunistically rather than triggering a download of every
+   * summary on the first keystroke.
+   */
+  private matchesEnhancedSearchQuery(
+    doc: ParliamentaryDocument,
+    searchFilter: SearchFilter
+  ): boolean {
+    const query = searchFilter.query.trim().toLowerCase();
+    if (!query) {
       return true;
     }
 
-    const query = searchFilter.query.toLowerCase();
-    const searchableText: string[] = [];
+    const haystack: string[] = [
+      doc.index.title,
+      doc.index.summaryText,
+      ...doc.index.topics,
+      ...doc.index.parties
+    ];
 
-    // Add executive summary
-    searchableText.push(doc.summary.executive_summary.toLowerCase());
-
-    // Add topics if enabled
-    if (searchFilter.includeTopics) {
-      doc.summary.main_topics.forEach(topic => {
-        searchableText.push(topic.topic.toLowerCase());
-        searchableText.push(topic.summary.toLowerCase());
-      });
-    }
-
-    // Add context if enabled
-    if (searchFilter.includeContext) {
-      doc.summary.main_topics.forEach(topic => {
+    const summary = doc.summary;
+    if (summary) {
+      summary.main_topics.forEach(topic => {
+        haystack.push(topic.topic, topic.summary, topic.outcome);
+        normalizePartyPositions(topic.party_positions).forEach(position => {
+          haystack.push(position.party, position.mainPosition);
+          if (position.reasoning) haystack.push(position.reasoning);
+          if (position.evidence) haystack.push(position.evidence);
+          position.proposals?.forEach(proposal => haystack.push(proposal));
+        });
         if (topic.context) {
-          Object.values(topic.context).forEach(contextValue => {
-            if (contextValue) {
-              searchableText.push(contextValue.toLowerCase());
-            }
+          Object.values(topic.context).forEach(value => {
+            if (value) haystack.push(value);
           });
         }
       });
+      haystack.push(...summary.key_decisions, ...summary.next_steps);
+      summary.fact_checks?.forEach(fc =>
+        haystack.push(fc.claim, fc.speaker, fc.explanation, fc.correction)
+      );
     }
 
-    // Add party positions if enabled
-    if (searchFilter.includePositions) {
-      doc.summary.main_topics.forEach(topic => {
-        normalizePartyPositions(topic.party_positions).forEach(position => {
-          searchableText.push(position.mainPosition.toLowerCase());
-          position.proposals?.forEach(proposal =>
-            searchableText.push(proposal.toLowerCase())
-          );
-        });
-      });
-    }
-
-    // Add reasoning if enabled
-    if (searchFilter.includeReasoning) {
-      doc.summary.main_topics.forEach(topic => {
-        normalizePartyPositions(topic.party_positions).forEach(position => {
-          if (position.reasoning) {
-            searchableText.push(position.reasoning.toLowerCase());
-          }
-          if (position.evidence) {
-            searchableText.push(position.evidence.toLowerCase());
-          }
-        });
-      });
-    }
-
-    // Add decisions if enabled
-    if (searchFilter.includeDecisions) {
-      doc.summary.key_decisions.forEach(decision => {
-        searchableText.push(decision.toLowerCase());
-      });
-    }
-
-    // Add next steps
-    if (doc.summary.next_steps) {
-      doc.summary.next_steps.forEach(step => {
-        searchableText.push(step.toLowerCase());
-      });
-    }
-
-    return searchableText.some(text => text.includes(query));
+    return haystack.join(' ').toLowerCase().includes(query);
   }
 
   // Public methods for updating filters
@@ -416,60 +316,6 @@ export class SummaryService {
   updateSearchFilter(searchFilter: Partial<SearchFilter>): void {
     const currentFilter = this.searchFilterSubject.value;
     this.searchFilterSubject.next({ ...currentFilter, ...searchFilter });
-  }
-
-  // Legacy method - kept for backward compatibility
-  async loadEnhancedSummaryFile(filename: string): Promise<void> {
-    await this.loadSpecificFiles([filename]);
-  }
-
-  // Method to load multiple summary files
-  async loadMultipleSummaryFiles(filenames: string[]): Promise<void> {
-    await this.loadSpecificFiles(filenames);
-  }
-
-  getDocumentById(id: string): Observable<ParliamentaryDocument | undefined> {
-    return this.documents$.pipe(
-      map(documents => documents.find(doc => doc.id === id))
-    );
-  }
-
-  // Enhanced utility methods
-  getTopicsByParty(partyName: string): Observable<EnhancedTopic[]> {
-    return this.documents$.pipe(
-      map(documents => {
-        const topics: EnhancedTopic[] = [];
-        documents.forEach(doc => {
-          doc.summary.main_topics.forEach(topic => {
-            const speaks = normalizePartyPositions(topic.party_positions).some(
-              ({ party }) => party === partyName
-            );
-            if (speaks) {
-              topics.push(topic);
-            }
-          });
-        });
-        return topics;
-      })
-    );
-  }
-
-  getPartiesByTopic(topicName: string): Observable<string[]> {
-    return this.documents$.pipe(
-      map(documents => {
-        const parties = new Set<string>();
-        documents.forEach(doc => {
-          doc.summary.main_topics.forEach(topic => {
-            if (topic.topic === topicName) {
-              normalizePartyPositions(topic.party_positions).forEach(({ party }) => {
-                parties.add(party);
-              });
-            }
-          });
-        });
-        return Array.from(parties);
-      })
-    );
   }
 
   // Method to refresh/reload all files
@@ -498,20 +344,18 @@ export class SummaryService {
           };
         }
 
-        const totalTopics = documents.reduce((sum, doc) => sum + doc.summary.main_topics.length, 0);
+        // Stats read the index so the toolbar shows real totals immediately,
+        // without waiting for every summary to be fetched.
+        const totalTopics = documents.reduce(
+          (sum, doc) => sum + doc.index.topicCount,
+          0
+        );
         const allParties = new Set<string>();
         const modelBreakdown: { [model: string]: number } = {};
-        
+
         documents.forEach(doc => {
-          // Count parties
-          doc.summary.main_topics.forEach(topic => {
-            normalizePartyPositions(topic.party_positions).forEach(({ party }) =>
-              allParties.add(party)
-            );
-          });
-          
-          // Count models
-          const model = doc.summary.processing_info.ai_model || 'unknown';
+          doc.index.parties.forEach(party => allParties.add(party));
+          const model = doc.index.model || 'unknown';
           modelBreakdown[model] = (modelBreakdown[model] || 0) + 1;
         });
 

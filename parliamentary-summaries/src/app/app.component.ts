@@ -1,10 +1,10 @@
 // src/app/app.component.ts - Updated with loading states
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable, Subject, BehaviorSubject, combineLatest } from 'rxjs';
-import { map, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { map, take, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 // Material Design imports
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -35,39 +35,37 @@ import {
   SummaryDisplayOptions,
   TopicDisplayMode,
   ProcessedDocument,
-  ProcessedPartyPosition,
-  ProcessedTopic,
   FactCheckAssessment,
-  normalizePartyPositions
+  createProcessedDocument
 } from './models/parliamentary-summary.model';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [
-    CommonModule, 
-    FormsModule,
-    MatToolbarModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatChipsModule,
-    MatExpansionModule,
-    MatCheckboxModule,
-    MatInputModule,
-    MatFormFieldModule,
-    MatSidenavModule,
-    MatDividerModule,
-    MatBadgeModule,
-    MatTooltipModule,
-    MatListModule,
-    MatRippleModule,
-    MatProgressSpinnerModule,
-    MatProgressBarModule,
-    MatSnackBarModule
-  ],
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+    selector: 'app-root',
+    imports: [
+        CommonModule,
+        FormsModule,
+        MatToolbarModule,
+        MatCardModule,
+        MatButtonModule,
+        MatIconModule,
+        MatChipsModule,
+        MatExpansionModule,
+        MatCheckboxModule,
+        MatInputModule,
+        MatFormFieldModule,
+        MatSidenavModule,
+        MatDividerModule,
+        MatBadgeModule,
+        MatTooltipModule,
+        MatListModule,
+        MatRippleModule,
+        MatProgressSpinnerModule,
+        MatProgressBarModule,
+        MatSnackBarModule
+    ],
+    templateUrl: './app.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy {
   title = 'Parliamentary Summaries';
@@ -99,6 +97,12 @@ export class AppComponent implements OnInit, OnDestroy {
   // Debounced search subject
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
+
+  // Deep links use the hash fragment (#/vergadering/<id>). GitHub Pages serves
+  // static files with no SPA fallback, so a path-based URL would 404 when
+  // opened or refreshed directly; a fragment never reaches the server.
+  private location = inject(Location);
+  private static readonly ROUTE_PREFIX = '#/vergadering/';
   
   // Enhanced display options
   displayOptions: SummaryDisplayOptions = {
@@ -151,13 +155,37 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Auto-select first document for demo
+    // Restore the meeting named in the URL, else fall back to the newest one.
     this.documents$.pipe(
       takeUntil(this.destroy$)
     ).subscribe(documents => {
-      if (documents.length > 0 && !this.selectedDocumentId) {
+      if (documents.length === 0 || this.selectedDocumentId) {
+        return;
+      }
+      const requested = this.documentIdFromUrl();
+      const match = requested
+        ? documents.find(doc => doc.id === requested)
+        : undefined;
+
+      if (match) {
+        this.selectDocument(match);
+      } else {
         this.onDocumentSelected(documents[0]);
       }
+    });
+
+    // Keep the view in step with the browser's back and forward buttons.
+    this.location.onUrlChange(() => {
+      const id = this.documentIdFromUrl();
+      if (!id || id === this.selectedDocumentId) {
+        return;
+      }
+      this.documents$.pipe(take(1), takeUntil(this.destroy$)).subscribe(documents => {
+        const match = documents.find(doc => doc.id === id);
+        if (match) {
+          this.selectDocument(match);
+        }
+      });
     });
 
     // Handle error messages
@@ -181,37 +209,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // Preprocessing method for documents
   private preprocessDocument(doc: ParliamentaryDocument): ProcessedDocument {
-    const factChecks = doc.summary.fact_checks ?? [];
-
-    return {
-      ...doc,
-      formattedDate: this.formatDateOnce(doc.date),
-      preview: doc.summary.executive_summary.slice(0, 200),
-      topicCount: doc.summary.main_topics.length,
-      decisionCount: doc.summary.key_decisions.length,
-      hasNextSteps: doc.summary.next_steps?.length > 0,
-      nextStepsCount: doc.summary.next_steps?.length || 0,
-      hasDecisions: doc.summary.key_decisions.length > 0,
-      factCheckCount: factChecks.length,
-      hasFactChecks: factChecks.length > 0,
-      processingDate: this.formatDateOnce(new Date(doc.summary.processing_info.processing_date)),
-      summary: {
-        ...doc.summary,
-        main_topics: doc.summary.main_topics.map(topic => ({
-          ...topic,
-          hasContext: this.hasTopicContextComputed(topic),
-          partyPositionsArray: normalizePartyPositions(topic.party_positions)
-        }))
-      }
-    };
-  }
-
-  // Compute context once
-  private hasTopicContextComputed(topic: any): boolean {
-    return !!(topic.context?.why_discussed || 
-             topic.context?.background || 
-             topic.context?.stakes ||
-             topic.context?.trigger);
+    return createProcessedDocument(doc, date => this.formatDateOnce(date));
   }
 
   // Format date once
@@ -226,19 +224,32 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // Fixed: Properly update selectedDocumentId and notify observable
   onDocumentSelected(document: ProcessedDocument): void {
-    console.log('Document selected:', document.title); // Debug log
+    this.selectDocument(document);
+    this.location.go(AppComponent.ROUTE_PREFIX + document.id);
+  }
+
+  /** Select without touching history — used when restoring from the URL. */
+  private selectDocument(document: ProcessedDocument): void {
     this.selectedDocumentId = document.id;
     this.selectedDocumentIdSubject.next(document.id);
+
+    // The list renders from the index; the detail panel needs the full
+    // summary, which is fetched the first time a meeting is opened.
+    void this.summaryService.ensureSummaryLoaded(document.id);
     
     // Reset expanded topics for new document
     this.displayOptions.expandedTopics.clear();
     this.allTopicsExpanded = false;
     
-    // Expand first few topics by default
-    if (document.summary.main_topics.length > 0) {
-      document.summary.main_topics.slice(0, 2).forEach(topic => {
-        this.displayOptions.expandedTopics.add(topic.topic);
-      });
+    // Expand the first couple of topics. The full summary may not have
+    // arrived yet, in which case the index still knows the topic names.
+    const topics = document.summary
+      ? document.summary.main_topics.map(t => t.topic)
+      : document.index.topics;
+    if (topics.length > 0) {
+      topics.slice(0, 2).forEach(topic =>
+        this.displayOptions.expandedTopics.add(topic)
+      );
       this.updateExpandAllState();
     }
   }
@@ -312,6 +323,14 @@ export class AppComponent implements OnInit, OnDestroy {
     this.snackBar.open('Documenten vernieuwd', 'Sluiten', { duration: 2000 });
   }
 
+  /** The meeting id in the current URL fragment, if there is one. */
+  private documentIdFromUrl(): string | null {
+    const hash = window.location.hash;
+    return hash.startsWith(AppComponent.ROUTE_PREFIX)
+      ? decodeURIComponent(hash.slice(AppComponent.ROUTE_PREFIX.length))
+      : null;
+  }
+
   /** Human-readable Dutch label for a fact-check verdict. */
   assessmentLabel(assessment: FactCheckAssessment): string {
     const labels: Record<FactCheckAssessment, string> = {
@@ -332,25 +351,5 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Optimized trackBy functions
-  trackByDocumentId(index: number, doc: ProcessedDocument): string {
-    return doc.id;
-  }
-
-  trackByTopicName(index: number, topic: ProcessedTopic): string {
-    return topic.topic;
-  }
-
-  trackByPartyName(index: number, position: ProcessedPartyPosition): string {
-    return position.party;
-  }
-
-  trackByFilterName(index: number, filter: TopicFilter | PartyFilter): string {
-    return filter.name;
-  }
-
-  trackByIndex(index: number): number {
-    return index;
-  }
 
 }

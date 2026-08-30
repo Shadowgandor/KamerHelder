@@ -409,67 +409,6 @@ def save_to_json(data: List[Dict], filename: str):
     
     print(f"Saved {len(data)} items to {filename}")
 
-def explore_api():
-    """
-    Explore what methods are available in the tkapi
-    """
-    api = tkapi.TKApi()
-    print("=== Exploring tkapi methods ===")
-    
-    # Print all available methods
-    methods = [method for method in dir(api) if not method.startswith('_')]
-    print("Available methods:")
-    for method in methods:
-        print(f"  - {method}")
-    print()
-    
-    # Try to get some basic data to understand the structure
-    try:
-        print("1. Getting personen (people)...")
-        personen = api.get_personen(max_items=5)
-        print(f"Found {len(personen)} personen")
-        if personen:
-            persoon = personen[0]
-            print(f"Sample persoon attributes: {[attr for attr in dir(persoon) if not attr.startswith('_')]}")
-        print()
-    except Exception as e:
-        print(f"Error getting personen: {e}")
-    
-    # Try verslagen without date filters
-    try:
-        print("2. Getting verslagen (reports)...")
-        verslagen = api.get_verslagen(max_items=5)
-        print(f"Found {len(verslagen)} verslagen")
-        if verslagen:
-            verslag = verslagen[0]
-            print(f"Sample verslag attributes: {[attr for attr in dir(verslag) if not attr.startswith('_')]}")
-            print(f"Sample verslag data:")
-            print(f"  ID: {getattr(verslag, 'id', 'N/A')}")
-            print(f"  Titel: {getattr(verslag, 'titel', 'N/A')}")
-            print(f"  Datum: {getattr(verslag, 'datum', 'N/A')}")
-            print(f"  Status: {getattr(verslag, 'status', 'N/A')}")
-            print(f"  Soort: {getattr(verslag, 'soort', 'N/A')}")
-        print()
-    except Exception as e:
-        print(f"Error getting verslagen: {e}")
-    
-    # Try vergaderingen
-    try:
-        print("3. Getting vergaderingen (meetings)...")
-        vergaderingen = api.get_vergaderingen(max_items=5)
-        print(f"Found {len(vergaderingen)} vergaderingen")
-        if vergaderingen:
-            vergadering = vergaderingen[0]
-            print(f"Sample vergadering attributes: {[attr for attr in dir(vergadering) if not attr.startswith('_')]}")
-            print(f"Sample vergadering data:")
-            print(f"  ID: {getattr(vergadering, 'id', 'N/A')}")
-            print(f"  Titel: {getattr(vergadering, 'titel', 'N/A')}")
-            print(f"  Datum: {getattr(vergadering, 'datum', 'N/A')}")
-            print(f"  Soort: {getattr(vergadering, 'soort', 'N/A')}")
-        print()
-    except Exception as e:
-        print(f"Error getting vergaderingen: {e}")
-
 def main():
     """
     Main function to demonstrate the usage with filtering and deduplication

@@ -1,8 +1,8 @@
 // src/main.ts
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { importProvidersFrom } from '@angular/core';
+import { importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 
 // Material Design theme and core modules
 import { MatNativeDateModule } from '@angular/material/core';
@@ -12,7 +12,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 
 bootstrapApplication(AppComponent, {
   providers: [
-    provideHttpClient(),
+    provideZoneChangeDetection(),provideHttpClient(withXhr()),
     provideAnimations(),
     
     // Material Design providers

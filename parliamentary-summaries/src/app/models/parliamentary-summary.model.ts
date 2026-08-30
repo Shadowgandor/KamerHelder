@@ -88,11 +88,35 @@ export interface ProcessingInfo {
   enhancement_level?: string;
 }
 
+/**
+ * One meeting as described by assets/summaries/manifest.json.
+ *
+ * The index holds everything the list, the filters and the search box need, so
+ * the app renders from a single request. Full summaries are ~9.5 KB each and
+ * are fetched only when a meeting is opened.
+ */
+export interface SummaryIndexEntry {
+  file: string;
+  id: string;
+  title: string;
+  date: string;
+  model: string;
+  /** Executive summary: shown as the preview and used as the search body. */
+  summaryText: string;
+  topics: string[];
+  parties: string[];
+  topicCount: number;
+  decisionCount: number;
+  factCheckCount: number;
+}
+
 export interface ParliamentaryDocument {
   id: string;
   title: string;
   date: Date;
-  summary: ParliamentarySummary;
+  index: SummaryIndexEntry;
+  /** Null until the full summary has been fetched. */
+  summary: ParliamentarySummary | null;
 }
 
 // Helper interfaces for filtering and display
@@ -146,7 +170,8 @@ export interface ProcessedDocument extends ParliamentaryDocument {
   factCheckCount: number;
   hasFactChecks: boolean;
   processingDate: string;
-  summary: ProcessedSummary;
+  /** Null while the full summary is still loading. */
+  summary: ProcessedSummary | null;
 }
 
 export interface ProcessedSummary extends ParliamentarySummary {
@@ -168,68 +193,8 @@ export interface ProcessedPartyPosition {
   evidence: string | null;
 }
 
-// Search options interface
-export interface SearchOptions {
-  includeContext: boolean;
-  includeReasoning: boolean;
-  includeProposals: boolean;
-}
-
-// Additional utility types
-export type FilterType = 'topic' | 'party' | 'search';
-
-export interface FilterState {
-  topics: TopicFilter[];
-  parties: PartyFilter[];
-  search: SearchFilter;
-}
-
-// Virtual scrolling configuration
-export interface VirtualScrollConfig {
-  itemSize: number;
-  minBufferPx: number;
-  maxBufferPx: number;
-}
-
-// Performance monitoring
-export interface PerformanceMetrics {
-  documentLoadTime: number;
-  preprocessingTime: number;
-  renderTime: number;
-  lastUpdate: Date;
-}
-
-// State management helpers
-export interface AppState {
-  documents: ProcessedDocument[];
-  selectedDocumentId: string | null;
-  filters: FilterState;
-  displayOptions: SummaryDisplayOptions;
-  performance: PerformanceMetrics;
-}
-
-// Event interfaces for component communication
-export interface DocumentSelectedEvent {
-  documentId: string;
-  document: ProcessedDocument;
-}
-
-export interface FilterChangedEvent {
-  filterType: FilterType;
-  filterName: string;
-  value: boolean | string;
-}
-
-export interface DisplayOptionChangedEvent {
-  option: keyof TopicDisplayMode;
-  value: boolean;
-}
-
-// Utility type for party colors
-export type PartyColorMap = { [party: string]: string };
-
 // Constants
-export const DEFAULT_PARTY_COLORS: PartyColorMap = {
+export const DEFAULT_PARTY_COLORS: { [party: string]: string } = {
   'VVD': '#0066CC',
   'PvdA': '#CC0000',
   'GroenLinks-PvdA': '#00AA00',
@@ -245,64 +210,59 @@ export const DEFAULT_PARTY_COLORS: PartyColorMap = {
   'Voorzitter': '#999999'
 };
 
-export const DEFAULT_VIRTUAL_SCROLL_CONFIG: VirtualScrollConfig = {
-  itemSize: 200,
-  minBufferPx: 900,
-  maxBufferPx: 1350
-};
+function hasTopicContext(topic: EnhancedTopic): boolean {
+  return !!(topic.context?.why_discussed ||
+            topic.context?.background ||
+            topic.context?.stakes ||
+            topic.context?.trigger);
+}
 
-export const DEFAULT_DISPLAY_OPTIONS: SummaryDisplayOptions = {
-  topicMode: {
-    showContext: true,
-    showSpecificProposals: true,
-    showReasoning: true,
-    showEvidence: true
-  },
-  expandedTopics: new Set<string>(),
-  showAllParties: true,
-  groupByTopic: true
-};
-
-// Type guards
-export function isEnhancedPartyPosition(position: EnhancedPartyPosition | string): position is EnhancedPartyPosition {
+function isEnhancedPartyPosition(
+  position: EnhancedPartyPosition | string
+): position is EnhancedPartyPosition {
   return typeof position === 'object' && 'position' in position;
 }
 
-export function hasTopicContext(topic: EnhancedTopic): boolean {
-  return !!(topic.context?.why_discussed || 
-           topic.context?.background || 
-           topic.context?.stakes ||
-           topic.context?.trigger);
-}
-
-// Utility functions for data transformation
-export function createProcessedDocument(doc: ParliamentaryDocument, formatDate: (date: Date) => string): ProcessedDocument {
-  const factChecks = doc.summary.fact_checks ?? [];
-
-  return {
-    ...doc,
-    formattedDate: formatDate(doc.date),
-    preview: doc.summary.executive_summary.slice(0, 200),
-    topicCount: doc.summary.main_topics.length,
-    decisionCount: doc.summary.key_decisions.length,
-    hasNextSteps: doc.summary.next_steps?.length > 0,
-    nextStepsCount: doc.summary.next_steps?.length || 0,
-    hasDecisions: doc.summary.key_decisions.length > 0,
-    factCheckCount: factChecks.length,
-    hasFactChecks: factChecks.length > 0,
-    processingDate: formatDate(new Date(doc.summary.processing_info.processing_date)),
-    summary: {
-      ...doc.summary,
-      main_topics: doc.summary.main_topics.map(topic => createProcessedTopic(topic))
-    }
-  };
-}
-
-export function createProcessedTopic(topic: EnhancedTopic): ProcessedTopic {
+function createProcessedTopic(topic: EnhancedTopic): ProcessedTopic {
   return {
     ...topic,
     hasContext: hasTopicContext(topic),
     partyPositionsArray: normalizePartyPositions(topic.party_positions)
+  };
+}
+
+// Utility functions for data transformation
+/**
+ * Counts and the preview come from the index, so a meeting renders in the list
+ * identically whether or not its full summary has been fetched yet.
+ */
+export function createProcessedDocument(
+  doc: ParliamentaryDocument,
+  formatDate: (date: Date) => string
+): ProcessedDocument {
+  const index = doc.index;
+  const summary = doc.summary;
+
+  return {
+    ...doc,
+    formattedDate: formatDate(doc.date),
+    preview: index.summaryText.slice(0, 200),
+    topicCount: index.topicCount,
+    decisionCount: index.decisionCount,
+    hasDecisions: index.decisionCount > 0,
+    factCheckCount: index.factCheckCount,
+    hasFactChecks: index.factCheckCount > 0,
+    nextStepsCount: summary?.next_steps?.length ?? 0,
+    hasNextSteps: (summary?.next_steps?.length ?? 0) > 0,
+    processingDate: summary
+      ? formatDate(new Date(summary.processing_info.processing_date))
+      : '',
+    summary: summary
+      ? {
+          ...summary,
+          main_topics: summary.main_topics.map(topic => createProcessedTopic(topic))
+        }
+      : null
   };
 }
 

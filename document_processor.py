@@ -8,6 +8,14 @@ import tempfile
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import argparse
+
+from summary_store import already_summarized
+
+# Downloaded documents are cached here; a verslag id always maps to the same
+# bytes, so a cached file never goes stale.
+CACHE_DIR = Path("documents")
+RETRIES = 3
 
 # For text extraction
 try:
@@ -40,83 +48,50 @@ class DocumentProcessor:
             'User-Agent': 'TK-Summary-Bot/1.0'
         })
     
-    def explore_verslag_structure(self, verslag_id: str):
-        """Explore the structure of a verslag to understand how to access documents"""
-        try:
-            # Get all verslagen and find the one we want
-            verslagen = self.api.get_verslagen(max_items=100)
-            verslag = None
-            
-            for v in verslagen:
-                if v.id == verslag_id:
-                    verslag = v
-                    break
-            
-            if not verslag:
-                print(f"Could not find verslag with ID {verslag_id}")
-                return None
-            
-            print(f"Exploring verslag structure:")
-            print(f"  - ID: {verslag.id}")
-            print(f"  - Available attributes: {[attr for attr in dir(verslag) if not attr.startswith('_')]}")
-            
-            # Try different ways to access document content
-            methods_to_try = [
-                'get_resource_url_or_none',
-                'url',
-                'resource_url'
-            ]
-            
-            for method in methods_to_try:
-                if hasattr(verslag, method):
-                    try:
-                        result = getattr(verslag, method)
-                        if callable(result):
-                            result = result()
-                        print(f"  - {method}: {result}")
-                    except Exception as e:
-                        print(f"  - {method}: Error - {e}")
-            
-            # Try to get related documents
-            if hasattr(verslag, 'related_items'):
-                try:
-                    documents = verslag.related_items('Document')
-                    print(f"  - Related documents: {len(documents) if documents else 0}")
-                    if documents:
-                        doc = documents[0]
-                        print(f"    - Document attributes: {[attr for attr in dir(doc) if not attr.startswith('_')]}")
-                        if hasattr(doc, 'get_resource_url_or_none'):
-                            print(f"    - Document URL: {doc.get_resource_url_or_none()}")
-                except Exception as e:
-                    print(f"  - Related documents error: {e}")
-            
-            return verslag
-            
-        except Exception as e:
-            print(f"Error exploring verslag structure: {e}")
-            return None
-
     def get_document_content(self, verslag_id: str) -> Optional[bytes]:
         """
         Download the raw document content for a verslag.
 
         Tries the known resource URL pattern directly, avoiding the need to
         search through a paginated list of verslagen.
+
+        A verslag id identifies one specific version of a transcript and its
+        bytes never change, so a downloaded document is cached on disk and
+        reused. Transient failures are retried; without that, one bad response
+        silently drops a debate for the night.
         """
+        cached = CACHE_DIR / f"{verslag_id}.bin"
+        if cached.exists():
+            print(f"Using cached document ({cached.stat().st_size} bytes)")
+            return cached.read_bytes()
+
         base = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0"
         url = f"{base}/Verslag({verslag_id})/TK.DA.GGM.OData.Resource()"
 
-        try:
-            response = self.session.get(url, timeout=60)
-            if response.status_code == 200:
-                print(f"Successfully downloaded {len(response.content)} bytes")
-                return response.content
-            else:
-                print(f"Download failed with status code: {response.status_code}")
-                return None
-        except Exception as e:
-            print(f"Error downloading document for {verslag_id}: {e}")
-            return None
+        for attempt in range(RETRIES):
+            try:
+                response = self.session.get(url, timeout=60)
+
+                if response.status_code == 200:
+                    print(f"Successfully downloaded {len(response.content)} bytes")
+                    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+                    cached.write_bytes(response.content)
+                    return response.content
+
+                # 4xx other than rate limiting will not improve on retry.
+                if response.status_code < 500 and response.status_code != 429:
+                    print(f"Download failed with status code: {response.status_code}")
+                    return None
+
+                print(f"Download got {response.status_code}, attempt {attempt + 1}/{RETRIES}")
+            except requests.RequestException as e:
+                print(f"Download error ({attempt + 1}/{RETRIES}): {e}")
+
+            if attempt < RETRIES - 1:
+                time.sleep(2 ** attempt)
+
+        print(f"Giving up on {verslag_id} after {RETRIES} attempts")
+        return None
     
     def extract_text_from_pdf(self, pdf_content: bytes) -> Optional[str]:
         """Extract text from PDF content"""
@@ -299,11 +274,40 @@ def main():
     print(f"  - mammoth (DOC): {'✓' if MAMMOTH_AVAILABLE else '✗ (install with: pip install mammoth)'}")
     print()
     
+    parser = argparse.ArgumentParser(description="Download and extract verslag text")
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="also process verslagen that already have a summary "
+        "(needed before re-summarizing one with summarizer.py --only)",
+    )
+    args = parser.parse_args()
+
     # Load existing plenaire verslagen
     try:
         with open('plenaire_verslagen.json', 'r', encoding='utf-8') as f:
             plenaire_verslagen = json.load(f)
-        
+
+        total = len(plenaire_verslagen)
+
+        # A verslag that already has a summary has nothing left to contribute:
+        # its document does not need downloading and its text does not need
+        # parsing. The nightly run fetches a rolling 7-day window, so most of
+        # what it sees was already handled on a previous night.
+        if not args.all:
+            plenaire_verslagen = [
+                v for v in plenaire_verslagen
+                if not already_summarized(v.get('id', ''))
+            ]
+            skipped = total - len(plenaire_verslagen)
+            if skipped:
+                print(f"Skipping {skipped} verslag(en) that already have a summary")
+
+        if not plenaire_verslagen:
+            print("Nothing new to process. Every verslag already has a summary.")
+            save_to_json([], "verslagen_with_content.json")
+            return
+
         print(f"Found {len(plenaire_verslagen)} plenaire verslagen to process")
         
         processor = DocumentProcessor()
@@ -338,11 +342,7 @@ def main():
                 else:
                     failed_count += 1
 
-                # Save progress every 10 completed items
-                if len(processed_verslagen) % 10 == 0:
-                    print(f"\n--- Saving progress ({len(processed_verslagen)}/{len(plenaire_verslagen)}) ---")
-                    save_to_json(processed_verslagen, f"verslagen_with_content_progress_{len(processed_verslagen)}.json")
-        
+
         # Save final results
         save_to_json(processed_verslagen, "verslagen_with_content.json")
         

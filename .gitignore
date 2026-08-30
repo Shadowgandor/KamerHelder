@@ -11,7 +11,6 @@ plenaire_verslagen.json
 recent_vergaderingen.json
 verslagen_with_content.json
 verslagen_with_content_partial.json
-verslagen_with_content_progress_*.json
 verslagen_parsed.json
 summary_*.json
 !parliamentary-summaries/src/assets/summaries/summary_*.json

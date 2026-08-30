@@ -64,6 +64,23 @@ jobs:
           git diff --staged --quiet && echo "Nothing new." || \
             (git commit -m "chore: update parliamentary summaries [skip ci]" && git push)
 
+      - name: Write run summary
+        if: always()
+        run: |
+          {
+            echo "## Nightly pipeline"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Deployed summaries | $(ls parliamentary-summaries/src/assets/summaries/summary_*.json 2>/dev/null | wc -l | tr -d ' ') |"
+            if [ -f batch_state.json ]; then
+              echo "| Batch pending | \`$(python -c 'import json;print(json.load(open("batch_state.json"))["batch_id"])')\` |"
+              echo "| Submitted | $(python -c 'import json;print(json.load(open("batch_state.json"))["submitted"])') |"
+            else
+              echo "| Batch pending | none |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
   # ──────────────────────────────────────────────────────────────
   # Job 2: build Angular and deploy to GitHub Pages
   #   Runs even when the pipeline job fails, so the site is always
@@ -90,7 +107,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
           cache-dependency-path: parliamentary-summaries/package-lock.json
 
@@ -113,3 +130,19 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v4
+
+  # The deploy job deliberately runs even when the pipeline fails, so the site
+  # is never left stale. This job exists so that a failed pipeline still fails
+  # the workflow overall, which is what triggers GitHub's notification.
+  report:
+    name: Report pipeline result
+    needs: [pipeline, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if the pipeline job failed
+        if: needs.pipeline.result != 'success'
+        run: |
+          echo "The pipeline job finished with: ${{ needs.pipeline.result }}"
+          echo "The site was still deployed with the summaries already in the repo."
+          exit 1

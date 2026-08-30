@@ -37,16 +37,22 @@ def run_script(script: str, extra_args: list = None):
         sys.exit(result.returncode)
 
 
-def check_prerequisite(filename: str, step: str):
+def check_prerequisite(filename: str, step: str) -> int:
+    """
+    Confirm a step's output exists and report how many items it holds.
+
+    An empty file is not an error. Once a verslag has a summary it is skipped
+    from then on, so on a day with no new debates — a weekend, a recess — every
+    intermediate is legitimately empty and the run has simply nothing to do.
+    A missing file is still a real failure.
+    """
     if not Path(filename).exists():
         print(f"Required file '{filename}' not found. Run '{step}.py' first.")
         sys.exit(1)
     with open(filename) as f:
         data = json.load(f)
-    if not data:
-        print(f"'{filename}' is empty. The previous step may have produced no results.")
-        sys.exit(1)
     print(f"  Found {len(data)} items in {filename}")
+    return len(data)
 
 
 def main():
@@ -96,7 +102,9 @@ def main():
         print("\nStep 2/4: Downloading and extracting document text...")
         check_prerequisite("plenaire_verslagen.json", "tk_data_retriever")
         run_script("document_processor")
-        check_prerequisite("verslagen_with_content.json", "document_processor")
+        if check_prerequisite("verslagen_with_content.json", "document_processor") == 0:
+            print("\nNo new verslagen to process. Nothing to summarize.")
+            return
     else:
         print("Step 2/4: Skipping (--start-from)")
 
@@ -104,7 +112,9 @@ def main():
         print("\nStep 3/4: Parsing XML documents...")
         check_prerequisite("verslagen_with_content.json", "document_processor")
         run_script("xml_text_extractor")
-        check_prerequisite("verslagen_parsed.json", "xml_text_extractor")
+        if check_prerequisite("verslagen_parsed.json", "xml_text_extractor") == 0:
+            print("\nNo transcripts could be parsed. Nothing to summarize.")
+            return
     else:
         print("Step 3/4: Skipping (--start-from)")
 
