@@ -20,7 +20,8 @@ xml_text_extractor.py  zet VLOS-XML om in een transcript met sprekers,
         ↓  verslagen_parsed.json
 summarizer.py          één verzoek per debat: samenvatting + feitencheck
         ↓  summary_<verslag_id>.json
-deploy_summaries.py    kopieert ze naar de Angular-assets + manifest.json
+deploy_summaries.py    kopieert ze naar de Angular-assets en bouwt de index
+        ↓               (manifest.json: titels, onderwerpen, fracties, aantallen)
 ```
 
 Alleen nieuwe verslagen worden verwerkt: heeft een verslag al een

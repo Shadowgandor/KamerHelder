@@ -36,7 +36,7 @@ import {
   TopicDisplayMode,
   ProcessedDocument,
   FactCheckAssessment,
-  normalizePartyPositions
+  createProcessedDocument
 } from './models/parliamentary-summary.model';
 
 @Component({
@@ -209,37 +209,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // Preprocessing method for documents
   private preprocessDocument(doc: ParliamentaryDocument): ProcessedDocument {
-    const factChecks = doc.summary.fact_checks ?? [];
-
-    return {
-      ...doc,
-      formattedDate: this.formatDateOnce(doc.date),
-      preview: doc.summary.executive_summary.slice(0, 200),
-      topicCount: doc.summary.main_topics.length,
-      decisionCount: doc.summary.key_decisions.length,
-      hasNextSteps: doc.summary.next_steps?.length > 0,
-      nextStepsCount: doc.summary.next_steps?.length || 0,
-      hasDecisions: doc.summary.key_decisions.length > 0,
-      factCheckCount: factChecks.length,
-      hasFactChecks: factChecks.length > 0,
-      processingDate: this.formatDateOnce(new Date(doc.summary.processing_info.processing_date)),
-      summary: {
-        ...doc.summary,
-        main_topics: doc.summary.main_topics.map(topic => ({
-          ...topic,
-          hasContext: this.hasTopicContextComputed(topic),
-          partyPositionsArray: normalizePartyPositions(topic.party_positions)
-        }))
-      }
-    };
-  }
-
-  // Compute context once
-  private hasTopicContextComputed(topic: any): boolean {
-    return !!(topic.context?.why_discussed || 
-             topic.context?.background || 
-             topic.context?.stakes ||
-             topic.context?.trigger);
+    return createProcessedDocument(doc, date => this.formatDateOnce(date));
   }
 
   // Format date once
@@ -262,16 +232,24 @@ export class AppComponent implements OnInit, OnDestroy {
   private selectDocument(document: ProcessedDocument): void {
     this.selectedDocumentId = document.id;
     this.selectedDocumentIdSubject.next(document.id);
+
+    // The list renders from the index; the detail panel needs the full
+    // summary, which is fetched the first time a meeting is opened.
+    void this.summaryService.ensureSummaryLoaded(document.id);
     
     // Reset expanded topics for new document
     this.displayOptions.expandedTopics.clear();
     this.allTopicsExpanded = false;
     
-    // Expand first few topics by default
-    if (document.summary.main_topics.length > 0) {
-      document.summary.main_topics.slice(0, 2).forEach(topic => {
-        this.displayOptions.expandedTopics.add(topic.topic);
-      });
+    // Expand the first couple of topics. The full summary may not have
+    // arrived yet, in which case the index still knows the topic names.
+    const topics = document.summary
+      ? document.summary.main_topics.map(t => t.topic)
+      : document.index.topics;
+    if (topics.length > 0) {
+      topics.slice(0, 2).forEach(topic =>
+        this.displayOptions.expandedTopics.add(topic)
+      );
       this.updateExpandAllState();
     }
   }

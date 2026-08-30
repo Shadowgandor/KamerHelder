@@ -7,7 +7,8 @@ import { AppComponent } from './app.component';
 import {
   createProcessedDocument,
   normalizePartyPositions,
-  ParliamentaryDocument
+  ParliamentaryDocument,
+  SummaryIndexEntry
 } from './models/parliamentary-summary.model';
 
 describe('AppComponent', () => {
@@ -81,10 +82,25 @@ describe('normalizePartyPositions', () => {
 });
 
 describe('createProcessedDocument', () => {
+  const index: SummaryIndexEntry = {
+    file: 'summary_abc.json',
+    id: 'abc',
+    title: '1e vergadering',
+    date: '2026-02-10T00:00:00Z',
+    model: 'claude-sonnet-5',
+    summaryText: 'Samenvatting.',
+    topics: [],
+    parties: ['VVD'],
+    topicCount: 0,
+    decisionCount: 1,
+    factCheckCount: 0
+  };
+
   const base: ParliamentaryDocument = {
     id: 'abc',
     title: '1e vergadering',
     date: new Date('2026-02-10T00:00:00Z'),
+    index,
     summary: {
       executive_summary: 'Samenvatting.',
       main_topics: [],
@@ -101,35 +117,37 @@ describe('createProcessedDocument', () => {
     }
   };
 
-  it('counts fact checks when present', () => {
+  it('takes its counts from the index', () => {
     const doc = createProcessedDocument(
-      {
-        ...base,
-        summary: {
-          ...base.summary,
-          fact_checks: [
-            {
-              claim: 'X',
-              speaker: 'Y',
-              assessment: 'onjuist',
-              explanation: 'Z',
-              correction: '',
-              sources: []
-            }
-          ]
-        }
-      },
+      { ...base, index: { ...index, factCheckCount: 1 } },
       d => d.toISOString()
     );
 
     expect(doc.factCheckCount).toBe(1);
     expect(doc.hasFactChecks).toBeTrue();
+    expect(doc.hasDecisions).toBeTrue();
   });
 
-  it('handles older summaries that have no fact_checks field', () => {
+  it('handles a meeting with no fact checks', () => {
     const doc = createProcessedDocument(base, d => d.toISOString());
     expect(doc.factCheckCount).toBe(0);
     expect(doc.hasFactChecks).toBeFalse();
-    expect(doc.hasDecisions).toBeTrue();
+  });
+
+  /**
+   * The list renders from the index before the full summary arrives, so a
+   * document with summary: null must still produce a complete list row.
+   */
+  it('renders a list row before the full summary has loaded', () => {
+    const doc = createProcessedDocument(
+      { ...base, summary: null },
+      d => d.toISOString()
+    );
+
+    expect(doc.summary).toBeNull();
+    expect(doc.title).toBe('1e vergadering');
+    expect(doc.decisionCount).toBe(1);
+    expect(doc.preview).toBe('Samenvatting.');
+    expect(doc.nextStepsCount).toBe(0);
   });
 });

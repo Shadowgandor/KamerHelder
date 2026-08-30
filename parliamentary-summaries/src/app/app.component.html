@@ -83,7 +83,7 @@
                         <span class="sr-only">feitenchecks</span>
                       </span>
                     }
-                    <span class="list-item-model">{{ document.summary.processing_info.ai_model || 'AI' }}</span>
+                    <span class="list-item-model">{{ document.index.model || 'AI' }}</span>
                   </span>
                 </button>
               }
@@ -109,11 +109,20 @@
             <h1 class="detail-title">{{ doc.title }}</h1>
             <div class="detail-subtitle">{{ doc.formattedDate }}</div>
           </div>
-          <!-- Executive Summary -->
+          <!-- The full summary arrives after the index; show the preview the
+               index already carries until it does. -->
           <section class="detail-section">
-            <h2><mat-icon>summarize</mat-icon> Samenvatting</h2>
-            <p class="executive-summary">{{ doc.summary.executive_summary }}</p>
+            <h2><mat-icon aria-hidden="true">summarize</mat-icon> Samenvatting</h2>
+            <p class="executive-summary">{{ doc.index.summaryText }}</p>
           </section>
+
+          @if (!doc.summary) {
+            <div class="detail-loading" role="status">
+              <mat-spinner diameter="28" aria-hidden="true"></mat-spinner>
+              <span>Details laden...</span>
+            </div>
+          }
+          @if (doc.summary) {
           <!-- Political Dynamics -->
           @if (doc.summary.political_dynamics) {
             <section class="detail-section dynamics-section">
@@ -267,6 +276,7 @@
               }
             </div>
           </section>
+          }
         </div>
       }
     </main>

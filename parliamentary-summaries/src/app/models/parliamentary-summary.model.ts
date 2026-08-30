@@ -88,11 +88,35 @@ export interface ProcessingInfo {
   enhancement_level?: string;
 }
 
+/**
+ * One meeting as described by assets/summaries/manifest.json.
+ *
+ * The index holds everything the list, the filters and the search box need, so
+ * the app renders from a single request. Full summaries are ~9.5 KB each and
+ * are fetched only when a meeting is opened.
+ */
+export interface SummaryIndexEntry {
+  file: string;
+  id: string;
+  title: string;
+  date: string;
+  model: string;
+  /** Executive summary: shown as the preview and used as the search body. */
+  summaryText: string;
+  topics: string[];
+  parties: string[];
+  topicCount: number;
+  decisionCount: number;
+  factCheckCount: number;
+}
+
 export interface ParliamentaryDocument {
   id: string;
   title: string;
   date: Date;
-  summary: ParliamentarySummary;
+  index: SummaryIndexEntry;
+  /** Null until the full summary has been fetched. */
+  summary: ParliamentarySummary | null;
 }
 
 // Helper interfaces for filtering and display
@@ -146,7 +170,8 @@ export interface ProcessedDocument extends ParliamentaryDocument {
   factCheckCount: number;
   hasFactChecks: boolean;
   processingDate: string;
-  summary: ProcessedSummary;
+  /** Null while the full summary is still loading. */
+  summary: ProcessedSummary | null;
 }
 
 export interface ProcessedSummary extends ParliamentarySummary {
@@ -207,25 +232,37 @@ function createProcessedTopic(topic: EnhancedTopic): ProcessedTopic {
 }
 
 // Utility functions for data transformation
-export function createProcessedDocument(doc: ParliamentaryDocument, formatDate: (date: Date) => string): ProcessedDocument {
-  const factChecks = doc.summary.fact_checks ?? [];
+/**
+ * Counts and the preview come from the index, so a meeting renders in the list
+ * identically whether or not its full summary has been fetched yet.
+ */
+export function createProcessedDocument(
+  doc: ParliamentaryDocument,
+  formatDate: (date: Date) => string
+): ProcessedDocument {
+  const index = doc.index;
+  const summary = doc.summary;
 
   return {
     ...doc,
     formattedDate: formatDate(doc.date),
-    preview: doc.summary.executive_summary.slice(0, 200),
-    topicCount: doc.summary.main_topics.length,
-    decisionCount: doc.summary.key_decisions.length,
-    hasNextSteps: doc.summary.next_steps?.length > 0,
-    nextStepsCount: doc.summary.next_steps?.length || 0,
-    hasDecisions: doc.summary.key_decisions.length > 0,
-    factCheckCount: factChecks.length,
-    hasFactChecks: factChecks.length > 0,
-    processingDate: formatDate(new Date(doc.summary.processing_info.processing_date)),
-    summary: {
-      ...doc.summary,
-      main_topics: doc.summary.main_topics.map(topic => createProcessedTopic(topic))
-    }
+    preview: index.summaryText.slice(0, 200),
+    topicCount: index.topicCount,
+    decisionCount: index.decisionCount,
+    hasDecisions: index.decisionCount > 0,
+    factCheckCount: index.factCheckCount,
+    hasFactChecks: index.factCheckCount > 0,
+    nextStepsCount: summary?.next_steps?.length ?? 0,
+    hasNextSteps: (summary?.next_steps?.length ?? 0) > 0,
+    processingDate: summary
+      ? formatDate(new Date(summary.processing_info.processing_date))
+      : '',
+    summary: summary
+      ? {
+          ...summary,
+          main_topics: summary.main_topics.map(topic => createProcessedTopic(topic))
+        }
+      : null
   };
 }
 
