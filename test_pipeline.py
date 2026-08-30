@@ -11,6 +11,7 @@ import unittest
 from types import SimpleNamespace
 
 import summarizer
+import tk_data_retriever
 from xml_text_extractor import VLOSDocumentParser
 
 NS = "http://www.tweedekamer.nl/ggm/vergaderverslag/v1.0"
@@ -235,6 +236,69 @@ class TestExtractSummary(unittest.TestCase):
         message.usage.server_tool_use = None
         summary = summarizer.extract_summary(message, {}, 0)
         self.assertEqual(summary["processing_info"]["web_searches"], 0)
+
+
+class TestVersionPreference(unittest.TestCase):
+    """
+    When several versions of one meeting exist, the pipeline must summarize the
+    best one. "GECORRIGEERD" is a substring of "ONGECORRIGEERD", so the earlier
+    containment test scored both the same and the corrected-transcript
+    preference silently never applied.
+    """
+
+    def score(self, soort, status):
+        return tk_data_retriever._version_score(
+            {"soort": f"VerslagSoort.{soort}", "status": f"VerslagStatus.{status}"}
+        )
+
+    def test_corrected_beats_uncorrected(self):
+        self.assertGreater(
+            self.score("EINDPUBLICATIE", "GECORRIGEERD"),
+            self.score("EINDPUBLICATIE", "ONGECORRIGEERD"),
+        )
+
+    def test_final_publication_outranks_correction_status(self):
+        # An uncorrected final publication still beats a corrected interim one.
+        self.assertGreater(
+            self.score("EINDPUBLICATIE", "ONGECORRIGEERD"),
+            self.score("TUSSENPUBLICATIE", "GECORRIGEERD"),
+        )
+
+    def test_unknown_values_score_zero(self):
+        self.assertEqual(tk_data_retriever._version_score({}), 0)
+        self.assertEqual(self.score("ONBEKEND", "ONBEKEND"), 0)
+
+    def test_enum_name_takes_the_final_segment(self):
+        self.assertEqual(
+            tk_data_retriever._enum_name("VerslagStatus.ONGECORRIGEERD"),
+            "ONGECORRIGEERD",
+        )
+        self.assertEqual(tk_data_retriever._enum_name(None), "")
+
+    def test_deduplication_keeps_the_corrected_version(self):
+        retriever = tk_data_retriever.TweedeKamerDataRetriever.__new__(
+            tk_data_retriever.TweedeKamerDataRetriever
+        )
+        group = [
+            {
+                "id": "uncorrected",
+                "vergadering_id": "v1",
+                "soort": "VerslagSoort.EINDPUBLICATIE",
+                "status": "VerslagStatus.ONGECORRIGEERD",
+            },
+            {
+                "id": "corrected",
+                "vergadering_id": "v1",
+                "soort": "VerslagSoort.EINDPUBLICATIE",
+                "status": "VerslagStatus.GECORRIGEERD",
+            },
+        ]
+        kept = retriever._deduplicate_verslagen(group)
+        self.assertEqual([v["id"] for v in kept], ["corrected"])
+
+        # Order must not decide the outcome.
+        kept_reversed = retriever._deduplicate_verslagen(list(reversed(group)))
+        self.assertEqual([v["id"] for v in kept_reversed], ["corrected"])
 
 
 if __name__ == "__main__":

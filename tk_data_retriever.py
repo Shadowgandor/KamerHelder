@@ -5,6 +5,30 @@ from typing import List, Dict, Optional
 import requests
 from pathlib import Path
 
+
+# "GECORRIGEERD" is a substring of "ONGECORRIGEERD", so a containment test
+# matches both and silently collapses the two apart. Compare the enum's final
+# segment exactly instead. Values look like "VerslagStatus.ONGECORRIGEERD".
+SOORT_SCORES = {"EINDPUBLICATIE": 100, "TUSSENPUBLICATIE": 50}
+STATUS_SCORES = {"GECORRIGEERD": 10, "ONGECORRIGEERD": 5}
+
+
+def _enum_name(value) -> str:
+    """Final segment of an enum's string form, e.g. 'ONGECORRIGEERD'."""
+    return str(value or "").rsplit(".", 1)[-1].strip().upper()
+
+
+def _version_score(verslag: Dict) -> int:
+    """
+    Rank competing versions of one meeting: a final publication beats an interim
+    one, and within the same kind a corrected transcript beats an uncorrected one.
+    """
+    return (
+        SOORT_SCORES.get(_enum_name(verslag.get("soort")), 0)
+        + STATUS_SCORES.get(_enum_name(verslag.get("status")), 0)
+    )
+
+
 class TweedeKamerDataRetriever:
     """
     A class to retrieve and process Tweede Kamer data using the tkapi library
@@ -27,17 +51,16 @@ class TweedeKamerDataRetriever:
         # Check soort - prefer EINDPUBLICATIE, but accept TUSSENPUBLICATIE for recent meetings
         soort = getattr(verslag, 'soort', None)
         if soort:
-            soort_str = str(soort)
-            # Accept EINDPUBLICATIE (preferred) or TUSSENPUBLICATIE (for recent meetings)
-            if not ('EINDPUBLICATIE' in soort_str or 'TUSSENPUBLICATIE' in soort_str):
+            # Accept EINDPUBLICATIE (preferred) or TUSSENPUBLICATIE (recent meetings)
+            if _enum_name(soort) not in SOORT_SCORES:
                 return False
         
         # Check status - we're okay with ONGECORRIGEERD and GECORRIGEERD
         status = getattr(verslag, 'status', None)
         if status:
-            status_str = str(status)
-            # Accept both ONGECORRIGEERD and GECORRIGEERD
-            if not ('ONGECORRIGEERD' in status_str or 'GECORRIGEERD' in status_str):
+            # Both corrected and uncorrected transcripts are usable; the
+            # preference between them is applied later, when deduplicating.
+            if _enum_name(status) not in STATUS_SCORES:
                 return False
         
         return True
@@ -79,22 +102,7 @@ class TweedeKamerDataRetriever:
                 best_score = -1
                 
                 for verslag in group:
-                    score = 0
-                    
-                    # Soort scoring (higher is better)
-                    soort = verslag.get('soort', '')
-                    if 'EINDPUBLICATIE' in soort:
-                        score += 100
-                    elif 'TUSSENPUBLICATIE' in soort:
-                        score += 50
-                    
-                    # Status scoring (higher is better)
-                    status = verslag.get('status', '')
-                    if 'GECORRIGEERD' in status:
-                        score += 10
-                    elif 'ONGECORRIGEERD' in status:
-                        score += 5
-                    
+                    score = _version_score(verslag)
                     if score > best_score:
                         best_score = score
                         best_verslag = verslag
