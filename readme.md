@@ -13,6 +13,7 @@ bronnen, en publiceert het resultaat als een Angular-webapp.
 tk_data_retriever.py   haalt verslagen op uit de Tweede Kamer API
         ↓  plenaire_verslagen.json
 document_processor.py  downloadt de documenten en haalt de tekst eruit
+        ↓               (alleen wat nog geen samenvatting heeft; met cache)
         ↓  verslagen_with_content.json
 xml_text_extractor.py  zet VLOS-XML om in een transcript met sprekers,
         ↓               interrupties en letterlijke moties
@@ -21,6 +22,11 @@ summarizer.py          één verzoek per debat: samenvatting + feitencheck
         ↓  summary_<verslag_id>.json
 deploy_summaries.py    kopieert ze naar de Angular-assets + manifest.json
 ```
+
+Alleen nieuwe verslagen worden verwerkt: heeft een verslag al een
+samenvatting, dan wordt het document niet opnieuw opgehaald of geparsed. Op
+een dag zonder nieuwe debatten doet de pijplijn dus niets, en dat is geen
+fout.
 
 Een debat beslaat 120.000 tot 370.000 tokens. Dat past in één verzoek, dus het
 hele debat gaat in één keer naar het model: geen chunking, geen samenvoegstap

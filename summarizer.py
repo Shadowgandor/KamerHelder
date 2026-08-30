@@ -30,9 +30,8 @@ from typing import Dict, List, Optional
 
 import anthropic
 
-# Summaries that have been deployed are the ones that survive in git; the
-# working directory is empty on a fresh CI checkout.
-DEPLOYED_DIR = Path("parliamentary-summaries/src/assets/summaries")
+from summary_store import already_summarized
+
 BATCH_STATE = Path("batch_state.json")
 
 MODEL = os.getenv("KAMERHELDER_MODEL", "claude-sonnet-5")
@@ -299,11 +298,6 @@ def write_summary(summary: Dict, verslag_id: str) -> Path:
         json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     return path
-
-
-def already_summarized(verslag_id: str) -> bool:
-    name = f"summary_{verslag_id}.json"
-    return (DEPLOYED_DIR / name).exists() or Path(name).exists()
 
 
 def load_pending(limit: Optional[int] = None, only: Optional[str] = None) -> List[Dict]:

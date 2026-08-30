@@ -7,10 +7,15 @@ No API calls are made; responses are stubbed.
 """
 
 import json
+import os
+import pathlib
+import shutil
+import tempfile
 import unittest
 from types import SimpleNamespace
 
 import summarizer
+import summary_store
 import tk_data_retriever
 from xml_text_extractor import VLOSDocumentParser
 
@@ -299,6 +304,51 @@ class TestVersionPreference(unittest.TestCase):
         # Order must not decide the outcome.
         kept_reversed = retriever._deduplicate_verslagen(list(reversed(group)))
         self.assertEqual([v["id"] for v in kept_reversed], ["corrected"])
+
+
+class TestSummaryStore(unittest.TestCase):
+    """
+    The skip check decides both what gets summarized and what gets downloaded,
+    so it has to look where summaries actually survive. Root-level
+    summary_*.json is gitignored; only the deployed copies exist on a fresh CI
+    checkout, and checking the working directory alone made every nightly run
+    redo the whole window.
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.cwd = os.getcwd()
+        os.chdir(self.tmp)
+        self.deployed = pathlib.Path(summary_store.DEPLOYED_DIR)
+        self.deployed.mkdir(parents=True)
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_finds_a_deployed_summary(self):
+        (self.deployed / "summary_abc.json").write_text("{}")
+        self.assertTrue(summary_store.already_summarized("abc"))
+
+    def test_finds_a_freshly_written_summary(self):
+        pathlib.Path("summary_def.json").write_text("{}")
+        self.assertTrue(summary_store.already_summarized("def"))
+
+    def test_absent_summary_is_not_claimed(self):
+        self.assertFalse(summary_store.already_summarized("ghi"))
+
+    def test_blank_id_is_not_summarized(self):
+        self.assertFalse(summary_store.already_summarized(""))
+
+    def test_summarizer_and_processor_share_one_definition(self):
+        # Two copies of this rule drifting apart would mean downloading
+        # documents nobody needs, or skipping ones that were never summarized.
+        import document_processor
+
+        self.assertIs(summarizer.already_summarized, summary_store.already_summarized)
+        self.assertIs(
+            document_processor.already_summarized, summary_store.already_summarized
+        )
 
 
 if __name__ == "__main__":
