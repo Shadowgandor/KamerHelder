@@ -1,10 +1,10 @@
 // src/app/app.component.ts - Updated with loading states
 
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable, Subject, BehaviorSubject, combineLatest } from 'rxjs';
-import { map, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { map, take, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 // Material Design imports
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -97,6 +97,12 @@ export class AppComponent implements OnInit, OnDestroy {
   // Debounced search subject
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
+
+  // Deep links use the hash fragment (#/vergadering/<id>). GitHub Pages serves
+  // static files with no SPA fallback, so a path-based URL would 404 when
+  // opened or refreshed directly; a fragment never reaches the server.
+  private location = inject(Location);
+  private static readonly ROUTE_PREFIX = '#/vergadering/';
   
   // Enhanced display options
   displayOptions: SummaryDisplayOptions = {
@@ -149,13 +155,37 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Auto-select first document for demo
+    // Restore the meeting named in the URL, else fall back to the newest one.
     this.documents$.pipe(
       takeUntil(this.destroy$)
     ).subscribe(documents => {
-      if (documents.length > 0 && !this.selectedDocumentId) {
+      if (documents.length === 0 || this.selectedDocumentId) {
+        return;
+      }
+      const requested = this.documentIdFromUrl();
+      const match = requested
+        ? documents.find(doc => doc.id === requested)
+        : undefined;
+
+      if (match) {
+        this.selectDocument(match);
+      } else {
         this.onDocumentSelected(documents[0]);
       }
+    });
+
+    // Keep the view in step with the browser's back and forward buttons.
+    this.location.onUrlChange(() => {
+      const id = this.documentIdFromUrl();
+      if (!id || id === this.selectedDocumentId) {
+        return;
+      }
+      this.documents$.pipe(take(1), takeUntil(this.destroy$)).subscribe(documents => {
+        const match = documents.find(doc => doc.id === id);
+        if (match) {
+          this.selectDocument(match);
+        }
+      });
     });
 
     // Handle error messages
@@ -224,7 +254,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // Fixed: Properly update selectedDocumentId and notify observable
   onDocumentSelected(document: ProcessedDocument): void {
-    console.log('Document selected:', document.title); // Debug log
+    this.selectDocument(document);
+    this.location.go(AppComponent.ROUTE_PREFIX + document.id);
+  }
+
+  /** Select without touching history — used when restoring from the URL. */
+  private selectDocument(document: ProcessedDocument): void {
     this.selectedDocumentId = document.id;
     this.selectedDocumentIdSubject.next(document.id);
     
@@ -308,6 +343,14 @@ export class AppComponent implements OnInit, OnDestroy {
   async onRefreshDocuments(): Promise<void> {
     await this.summaryService.refreshDocuments();
     this.snackBar.open('Documenten vernieuwd', 'Sluiten', { duration: 2000 });
+  }
+
+  /** The meeting id in the current URL fragment, if there is one. */
+  private documentIdFromUrl(): string | null {
+    const hash = window.location.hash;
+    return hash.startsWith(AppComponent.ROUTE_PREFIX)
+      ? decodeURIComponent(hash.slice(AppComponent.ROUTE_PREFIX.length))
+      : null;
   }
 
   /** Human-readable Dutch label for a fact-check verdict. */

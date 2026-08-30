@@ -1,6 +1,6 @@
 <div class="app-container">
-  <mat-toolbar class="app-toolbar">
-    <mat-icon class="toolbar-icon">account_balance</mat-icon>
+  <mat-toolbar class="app-toolbar" role="banner">
+    <mat-icon class="toolbar-icon" aria-hidden="true">account_balance</mat-icon>
     <span class="toolbar-title">KamerHelder</span>
     <span class="toolbar-spacer"></span>
     @if (documentStats$ | async; as stats) {
@@ -11,34 +11,37 @@
   </mat-toolbar>
 
   @if (loading$ | async) {
-    <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
+    <mat-progress-bar
+      mode="indeterminate"
+      color="accent"
+      aria-label="Samenvattingen laden"></mat-progress-bar>
   }
 
   <div class="workspace">
     <!-- Left panel: search + document list -->
-    <div class="list-panel">
+    <nav class="list-panel" aria-label="Vergaderingen">
       <div class="list-search">
         <mat-form-field appearance="outline" class="search-field">
           <mat-label>Zoeken...</mat-label>
           <input matInput
             [ngModel]="searchQuery"
             (ngModelChange)="onSearchChangeDebounced($event)">
-          <mat-icon matSuffix>search</mat-icon>
+          <mat-icon matSuffix aria-hidden="true">search</mat-icon>
         </mat-form-field>
       </div>
 
       <!-- Loading state -->
       @if (loading$ | async) {
-        <div class="list-loading">
-          <mat-spinner diameter="32"></mat-spinner>
+        <div class="list-loading" role="status">
+          <mat-spinner diameter="32" aria-hidden="true"></mat-spinner>
           <span>Documenten laden...</span>
         </div>
       }
 
       <!-- Error state -->
       @if (error$ | async; as error) {
-        <div class="list-error">
-          <mat-icon color="warn">error_outline</mat-icon>
+        <div class="list-error" role="alert">
+          <mat-icon color="warn" aria-hidden="true">error_outline</mat-icon>
           <span>{{ error }}</span>
           <button mat-button color="primary" (click)="onRefreshDocuments()">Opnieuw</button>
         </div>
@@ -50,39 +53,48 @@
           @if (documents$ | async; as documents) {
             <div>
               @if (documents.length === 0) {
-                <div class="empty-list">
-                  <mat-icon>inbox</mat-icon>
+                <div class="empty-list" role="status">
+                  <mat-icon aria-hidden="true">inbox</mat-icon>
                   <p>Geen documenten gevonden</p>
                 </div>
               }
               @for (document of documents; track document.id) {
-                <div
+                <button
+                  type="button"
                   class="list-item"
                   [class.active]="selectedDocumentId === document.id"
+                  [attr.aria-current]="selectedDocumentId === document.id ? 'true' : null"
                   (click)="onDocumentSelected(document)"
                   matRipple>
-                  <div class="list-item-date">{{ document.formattedDate }}</div>
-                  <div class="list-item-title">{{ document.title }}</div>
-                  <div class="list-item-meta">
-                    <span><mat-icon>topic</mat-icon>{{ document.topicCount }}</span>
-                    <span><mat-icon>check_circle</mat-icon>{{ document.decisionCount }}</span>
+                  <span class="list-item-date">{{ document.formattedDate }}</span>
+                  <span class="list-item-title">{{ document.title }}</span>
+                  <span class="list-item-meta">
+                    <span [matTooltip]="document.topicCount + ' onderwerpen'">
+                      <mat-icon aria-hidden="true">topic</mat-icon>{{ document.topicCount }}
+                      <span class="sr-only">onderwerpen</span>
+                    </span>
+                    <span [matTooltip]="document.decisionCount + ' besluiten'">
+                      <mat-icon aria-hidden="true">check_circle</mat-icon>{{ document.decisionCount }}
+                      <span class="sr-only">besluiten</span>
+                    </span>
                     @if (document.hasFactChecks) {
-                      <span [matTooltip]="document.factCheckCount + ' feitencheck(s)'">
-                        <mat-icon>fact_check</mat-icon>{{ document.factCheckCount }}
+                      <span [matTooltip]="document.factCheckCount + ' feitenchecks'">
+                        <mat-icon aria-hidden="true">fact_check</mat-icon>{{ document.factCheckCount }}
+                        <span class="sr-only">feitenchecks</span>
                       </span>
                     }
                     <span class="list-item-model">{{ document.summary.processing_info.ai_model || 'AI' }}</span>
-                  </div>
-                </div>
+                  </span>
+                </button>
               }
             </div>
           }
         </div>
       }
-    </div>
+    </nav>
 
     <!-- Right panel: document detail -->
-    <div class="detail-panel">
+    <main class="detail-panel" aria-label="Samenvatting" tabindex="-1" #detail>
       @if (!(selectedDocument$ | async)) {
         <div class="detail-empty">
           <mat-icon>article</mat-icon>
@@ -257,6 +269,6 @@
           </section>
         </div>
       }
-    </div>
+    </main>
   </div>
 </div>
