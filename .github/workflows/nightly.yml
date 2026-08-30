@@ -7,7 +7,11 @@ on:
 
 jobs:
   # ──────────────────────────────────────────────────────────────
-  # Job 1: fetch new verslagen, summarise them, commit to repo
+  # Job 1: collect yesterday's batch, then queue tonight's.
+  #
+  # Summarization runs through the Batch API, which is half price but
+  # asynchronous, so each run collects the previous run's results and submits a
+  # new job. Summaries therefore appear one day after the debate is fetched.
   # ──────────────────────────────────────────────────────────────
   pipeline:
     name: Run pipeline
@@ -23,37 +27,42 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: pip
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Run pipeline
+      # Order matters: collect the previous run's batch before submitting a new
+      # one, because submit refuses to queue while a batch is still pending.
+      - name: Fetch and parse verslagen
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: python run_pipeline.py --days 7 --summarize none
+
+      - name: Collect previous batch
+        if: hashFiles('batch_state.json') != ''
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           PYTHONUNBUFFERED: '1'
-        run: python run_pipeline.py --summarizer claude --days 7
+        run: python summarizer.py --mode collect
 
-      - name: Upload summaries as artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: summaries-${{ github.run_id }}
-          path: summary_*.json
-          if-no-files-found: ignore
-          retention-days: 7
+      - name: Submit new batch
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PYTHONUNBUFFERED: '1'
+        run: python summarizer.py --mode submit
 
       - name: Deploy summaries to Angular assets
         run: python deploy_summaries.py
 
-      - name: Commit new summaries
+      - name: Commit summaries and batch state
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add parliamentary-summaries/src/assets/summaries/
-          git diff --staged --quiet && echo "No new summaries." || \
-            git commit -m "chore: add new parliamentary summaries [skip ci]" && git push
+          git add parliamentary-summaries/src/assets/summaries/ batch_state.json || true
+          git diff --staged --quiet && echo "Nothing new." || \
+            (git commit -m "chore: update parliamentary summaries [skip ci]" && git push)
 
   # ──────────────────────────────────────────────────────────────
   # Job 2: build Angular and deploy to GitHub Pages

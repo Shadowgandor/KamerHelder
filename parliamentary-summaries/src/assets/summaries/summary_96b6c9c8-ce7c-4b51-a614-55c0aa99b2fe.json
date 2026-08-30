@@ -1,58 +1,239 @@
 {
-  "executive_summary": "The 41st Dutch parliamentary meeting on February 10, 2026 addressed critical issues of police officer safety and public health threats, including asbestos-contaminated products. While multiple parties criticized the government's response as insufficiently decisive, several concrete measures were committed to including NVWA investigations, industry coordination, and police protection recommendations for the incoming cabinet.",
+  "executive_summary": "Deze plenaire vergadering werd gedomineerd door de eerste termijn van de begrotingsbehandeling Klimaat en Groene Groei, waarin het nieuwe coalitieakkoord van D66, CDA en VVD uitgebreid ter discussie stond: linkse partijen vonden het te weinig ambitieus en te fossiel, rechtse partijen vonden het te duur en te weinig realistisch. Tijdens het vragenuur kwamen drie actuele kwesties aan bod: een ondergedoken politieagent na een aanhouding in Utrecht, asbest in speelzand voor kinderen en slechte naleving van bestrijdingsmiddelenregels door snijbloementelers, waarbij bewindspersonen weinig harde toezeggingen deden. In meerdere tweeminutendebatten over kernenergie, gaswinning, gasvoorraden en de COP30-top werden tientallen moties ingediend en van een kabinetsoordeel voorzien. Bij de stemmingen werden veel moties over de begrotingen Water, Jeugd, Binnenlandse Zaken en Asiel en Migratie aangenomen of verworpen, en werd de stemming over amendementen bij de Wet werkelijk rendement box 3 uitgesteld naar donderdag. Twee nieuwe Kamerleden, mevrouw Van Oosterhout (GroenLinks-PvdA) en de heer Van den Berg (JA21), hielden hun maidenspeech.",
   "main_topics": [
     {
-      "topic": "Police Officer Safety and Support",
-      "summary": "Parliament discussed a Utrecht police officer forced into hiding with his family after making an arrest, raising broader concerns about police leadership response, officer morale, recruitment challenges, and the culture of fear within law enforcement. Debates centered on whether the police chief provided adequate public backing and what systemic protections are needed.",
-      "party_positions": {
-        "JA21 (Coenradie)": "Strongly critical of police leadership for inadequate public support. Demanded concrete measures to protect the officer and restore trust. Emphasized that effective authority requires standing firmly behind personnel.",
-        "VVD (Van der Plas)": "Expressed sympathy for the officer and concern about recruitment impacts, questioning who would pursue policing if colleagues lack employer protection.",
-        "GroenLinks-PvdA (Van der Werf)": "Supported the officer and focused on doxing enforcement, asking about legal consequences for those who forced the family into hiding.",
-        "PVV (Faber)": "Criticized government inaction despite repeated parliamentary warnings about police issues, demanding concrete rather than procedural responses.",
-        "DENK (El Abassi)": "Offered balanced perspective, noting that criticism of the police chief's nuanced response may itself be unfair."
-      },
-      "outcome": "Minister Rijkaart committed to relaying police protection system recommendations and body camera funding to the next cabinet. Government committed to providing written information about how police handle threats against officers."
+      "topic": "Begroting Klimaat en Groene Groei 2026: toetsing van het nieuwe coalitieakkoord",
+      "summary": "In de eerste termijn van dit begrotingsdebat, de laatste onder deze demissionaire minister, stond het klimaat- en energiehoofdstuk van het kersverse coalitieakkoord van D66, CDA en VVD centraal. Onderwerpen waren onder meer het al dan niet halen van de klimaatdoelen voor 2030 en 2040, de bouw van kerncentrales en kleine modulaire reactoren (SMR's), netcongestie en de kosten van netverzwaring, steun aan de industrie via maatwerkafspraken en het afschaffen van de nationale CO2-heffing, de verplichte hybride warmtepomp vanaf 2029, en het uitbreiden van windenergie op zee. Ook de opening van Lelystad Airport en nieuwe gaswinning op land kwamen aan bod. Twee nieuwe Kamerleden hielden hun maidenspeech: mevrouw Van Oosterhout (GroenLinks-PvdA), die haar ervaring met klimaatzaken tegen Shell en met de aardbevingsproblematiek in Groningen deelde, en de heer Van den Berg (JA21), die pleitte voor kernenergie en tegen te hoge energiebelasting.",
+      "party_positions": [
+        {
+          "party": "D66",
+          "position": "Steunt de \"groene koers\" van het coalitieakkoord, wil vasthouden aan het 2030-doel en pleit voor extra investeringen in wind op zee, subsidies voor klimaatpioniers en een structureel Noodfonds Energie."
+        },
+        {
+          "party": "VVD",
+          "position": "Wil realistisch en uitvoerbaar klimaatbeleid met een gelijk Europees speelveld, een structurele overlegtafel met de industrie en voortvarende bouw van kerncentrales en SMR's."
+        },
+        {
+          "party": "CDA",
+          "position": "Vraagt aandacht voor uitvoerbaarheid, netcongestie, een gelijk speelveld voor de industrie en meer regie op de energietransitie; is kritisch op de trage voortgang bij hoogspanningsstations."
+        },
+        {
+          "party": "BBB",
+          "position": "Vindt de verhoogde ambitie voor wind op zee (naar 40 gigawatt) onrealistisch en te duur, verzet zich tegen verplichtingen zoals reclameverboden en wil eerst de gevolgen voor platteland en visserij in kaart brengen."
+        },
+        {
+          "party": "PVV",
+          "position": "Vindt het Nederlandse klimaatbeleid zinloos gezien de kleine mondiale invloed van Nederland, wil stoppen met windturbines en subsidies en de energiebelasting op gas verlagen."
+        },
+        {
+          "party": "JA21",
+          "position": "Zet vooral in op kernenergie als oplossing en waarschuwt voor stijgende energiebelasting en netkosten voor huishoudens en het mkb."
+        },
+        {
+          "party": "GroenLinks-PvdA",
+          "position": "Vindt het coalitieakkoord te weinig ambitieus, wil stoppen met nieuwe gaswinning op land, fossiele subsidies afbouwen en Lelystad Airport niet openen."
+        },
+        {
+          "party": "Partij voor de Dieren",
+          "position": "Mist normering, beprijzing en gedragsverandering; wil een einde aan fossiele subsidies en de vee-industrie en pleit voor bosaanplant als CO2-opslag."
+        },
+        {
+          "party": "ChristenUnie",
+          "position": "Mist het vroegere \"klimaatdrammer\"-elan van D66, vraagt aandacht voor netcongestie door datacenters, nettarieven en de effecten van de Europese ETS2-lastenverzwaring."
+        },
+        {
+          "party": "SGP",
+          "position": "Vraagt aandacht voor de gevolgen van rechterlijke klimaatuitspraken voor het bedrijfsleven en pleit voor lastenverlichting via langere afschrijving van netkosten."
+        },
+        {
+          "party": "Volt",
+          "position": "Wil een Europese aanpak, snellere Europese netkoppeling en meer duidelijkheid over de haalbaarheid van kernenergie en maatwerkafspraken."
+        }
+      ],
+      "outcome": "De algemene beraadslaging is geschorst; de beantwoording door de minister en de stemmingen volgen op donderdag."
     },
     {
-      "topic": "Asbestos-Contaminated Play Sand Crisis",
-      "summary": "Parliament addressed discovery of asbestos-contaminated products (particularly play sand) being sold in the Netherlands, with comparison to Belgium and Australia's more aggressive public responses. Debate focused on government's precautionary measures, industry coordination, and inspection transparency.",
-      "party_positions": {
-        "SP (Beckerman)": "Demanded precautionary measures comparable to Belgium and Australia, criticizing the Dutch government's approach as insufficiently decisive and lacking adequate public communication.",
-        "NVWA/Government (Tielen)": "Defended the Dutch approach as effective, emphasizing coordination with industry and company responsibility. Argued that visible action (product removal from shelves) is already occurring without requiring the same public announcements as other countries."
-      },
-      "outcome": "NVWA investigation underway; industry organizations and toy importers reinforced legal obligations; companies agreed not to sell non-compliant products with removal already occurring from online platforms and retail shops. NVWA to enhance inspection transparency and increase inter-agency cooperation. Belgium-Netherlands coordination on product safety ongoing."
+      "topic": "Vragenuur: ondergedoken politieagent na aanhouding onder het Bollendak in Utrecht",
+      "summary": "Naar aanleiding van een aanhouding in Utrecht waarbij een agent in opspraak kwam, moest hij met zijn gezin onderduiken na bedreigingen en het delen van zijn persoonsgegevens (doxing). Kamerleden vroegen de aanwezige minister van Binnenlandse Zaken (die inviel voor Justitie en Veiligheid) om opheldering over de bescherming van de agent, de rol van de politietop en een vermeende angstcultuur bij de politie.",
+      "party_positions": [
+        {
+          "party": "JA21",
+          "position": "Verwijt de politietop en het kabinet gebrek aan directe rugdekking voor de agent en signaleert een angstcultuur onder agenten."
+        },
+        {
+          "party": "PVV",
+          "position": "Vindt dat de politiechef de agent heeft laten vallen en eist directe, concrete actie van het kabinet."
+        },
+        {
+          "party": "BBB",
+          "position": "Vraagt aandacht voor het effect van dit soort zaken op de aantrekkelijkheid van het politievak."
+        },
+        {
+          "party": "minister van Binnenlandse Zaken en Koninkrijksrelaties (Rijkaart)",
+          "position": "Wijst op genomen veiligheidsmaatregelen en lopend strafrechtelijk onderzoek naar het doxen, maar kan niet ingaan op individuele details en verwijst veel vragen door naar zijn opvolger."
+        }
+      ],
+      "outcome": "Toezeggingen: schriftelijke informatie aan de Kamer over hoe de politie omgaat met bedreigde agenten, en de wens om het gesprek met politie Midden-Nederland door te geleiden naar het volgende kabinet."
     },
     {
-      "topic": "Regulatory Compliance and Industry Oversight",
-      "summary": "Broader discussion of enforcement mechanisms for food safety, pesticide regulation, and product compliance across multiple sectors including flower cultivation and toy imports.",
-      "party_positions": {
-        "Government": "Committed to enhanced sanctioning regime for pesticide regulation violations and benchmark system development for flower cultivation sector (to be continued by successor cabinet)."
-      },
-      "outcome": "Government considering strengthened enforcement mechanisms; flower cultivation benchmark system development proceeding; European regulatory alignment discussions ongoing."
+      "topic": "Vragenuur: asbest in speelzand voor kinderen",
+      "summary": "Na berichtgeving dat in zes van de twaalf onderzochte speelzandproducten asbest is aangetroffen, werd de staatssecretaris van VWS bevraagd over de trage Nederlandse reactie in vergelijking met België en Australië, waar wel verkoopstops en crisisstructuren zijn ingesteld.",
+      "party_positions": [
+        {
+          "party": "SP",
+          "position": "Eist een onmiddellijke verkoopstop op basis van het voorzorgsbeginsel, verwijdering van zand uit scholen en opvang, en een nationale crisisstructuur zoals in België."
+        },
+        {
+          "party": "GroenLinks-PvdA",
+          "position": "Vraagt of de regelgeving voldoende het zekere voor het onzekere neemt tijdens onderzoek."
+        },
+        {
+          "party": "CDA en VVD",
+          "position": "Vragen om extra inspanningen en snelheid van de NVWA, maar steunen geen verkoopstop."
+        },
+        {
+          "party": "staatssecretaris Jeugd, Preventie en Sport (Tielen)",
+          "position": "Stelt dat de NVWA al actie onderneemt via afspraken met de brancheorganisatie en dat bedrijven zelf moeten bewijzen dat hun producten veilig zijn; wijst een generieke verkoopstop af."
+        }
+      ],
+      "outcome": "Geen verkoopstop toegezegd; de staatssecretaris zegt een brief toe over de stand van zaken en de resultaten van het NVWA-onderzoek. De SP kondigt een debataanvraag aan, die op de dertigledenlijst is gezet."
+    },
+    {
+      "topic": "Vragenuur: lage naleving gewasbeschermingsmiddelen bij snijbloementelers",
+      "summary": "Naar aanleiding van een NVWA-rapport over slechte naleving van regels voor gewasbeschermingsmiddelen bij snijbloementelers onder glas, vroeg de Kamer de minister van LVVN om verklaringen en verscherpte handhaving, mede met het oog op Valentijnsdag.",
+      "party_positions": [
+        {
+          "party": "D66",
+          "position": "Wil strenger sanctioneren, meer transparantie en actieve communicatie richting bloemisten en consumenten."
+        },
+        {
+          "party": "GroenLinks-PvdA",
+          "position": "Noemt het percentage overtredingen choquerend en vraagt om snelle transparantie over welke telers zich niet aan de regels houden."
+        },
+        {
+          "party": "Partij voor de Dieren",
+          "position": "Bekritiseert vrijblijvende afspraken met de sector en pleit voor afbouw van de sierteeltsector."
+        },
+        {
+          "party": "minister van Landbouw, Visserij, Voedselzekerheid en Natuur (Wiersma)",
+          "position": "Erkent de zorgen maar nuanceert de cijfers, wijst op lopende NVWA-maatregelen zoals een zwaarder sanctieregime en een toekomstig benchmarksysteem, en laat verdere stappen aan haar opvolger."
+        }
+      ],
+      "outcome": "Geen extra concrete maatregelen van het demissionaire kabinet; opvolging wordt overgelaten aan het volgende kabinet."
+    },
+    {
+      "topic": "Energiebeleid: kernenergie, gaswinning en gasleveringszekerheid (tweeminutendebatten)",
+      "summary": "In drie tweeminutendebatten (Kernenergie, Mijnbouw, Gasmarkt en leveringszekerheid) dienden Kamerleden tientallen moties in over onder meer de locatiekeuze en versnelling van kerncentrales en SMR's, een afbouwpad voor gaswinning op land, bescherming van veenweidegebieden en de Westerschelde, en de lage vulgraad van Nederlandse gasopslagen. Minister Hermans gaf per motie een appreciatie.",
+      "party_positions": [
+        {
+          "party": "JA21 en SGP",
+          "position": "Dienden gezamenlijk veel moties in om de uitrol van SMR's te versnellen en financieringsvraagstukken (pensioenfondsen, EU-kostendeling) te onderzoeken."
+        },
+        {
+          "party": "GroenLinks-PvdA",
+          "position": "Wilde geen fossiele lobby bij de Colombia-klimaattop, strengere bescherming van natuurgebieden bij gaswinning en een standstill voor gaswinning onder veenweidegebieden."
+        },
+        {
+          "party": "BBB en JA21",
+          "position": "Stelden voor om de aangekondigde internationale klimaattop in Colombia helemaal niet te organiseren."
+        },
+        {
+          "party": "PVV en SP",
+          "position": "Wilden respectievelijk dat een nationale gasnoodvoorraad alleen voor Nederland is en dat gasopslagen genationaliseerd worden."
+        },
+        {
+          "party": "minister van Klimaat en Groene Groei (Hermans)",
+          "position": "Gaf veel SMR- en kernenergiemoties oordeel Kamer, maar ontraadde moties over een standstill voor gaswinning, nationalisatie van gasopslag en het afblazen van de klimaattop."
+        }
+      ],
+      "outcome": "Moties over onder meer SMR-versnelling, batendeling gaswinning en de Groningse zoutwinning kregen oordeel Kamer; moties over standstill gaswinning, nationalisatie van gasopslagen en het afzien van de klimaattop werden ontraden. Stemming volgt in een volgende vergadering."
+    },
+    {
+      "topic": "Stemmingen over moties bij de begrotingen Water, Jeugd, Binnenlandse Zaken en Asiel en Migratie",
+      "summary": "De Kamer stemde over tientallen moties die eerder waren ingediend bij de begrotingsbehandelingen Water, Jeugd, Binnenlandse Zaken en Koninkrijksrelaties, en Asiel en Migratie, over uiteenlopende onderwerpen als dijknormering, de Kaderrichtlijn Water, jeugdzorghervorming, discriminatiebeleid, kiesdrempel en asielprocedures.",
+      "party_positions": [
+        {
+          "party": "coalitiepartijen (VVD, CDA, JA21, BBB, SGP, ChristenUnie, PVV, FVD)",
+          "position": "Stemden gezamenlijk voor versoepeling van Kaderrichtlijn Water-normen en het schrappen van nationale koppen op EU-regelgeving."
+        },
+        {
+          "party": "linkse partijen (SP, GroenLinks-PvdA, D66, Volt, PvdD, DENK)",
+          "position": "Stemden voor onder meer onderzoek naar pfas-verboden en tegen versoepeling van waternormen."
+        },
+        {
+          "party": "DENK",
+          "position": "Kreeg voor meerdere moties tegen discriminatie en tegen aparte azc's voor lhbti'ers wisselende steun."
+        }
+      ],
+      "outcome": "Uiteenlopende uitkomsten: onder meer motie over gemeentelijke noodplannen bij extreme regenval unaniem aangenomen, motie over onafhankelijk onderzoek naar ZIKOS-afdelingen unaniem aangenomen, en diverse PVV/JA21-moties over asielbeleid (zoals een totale asielstop) verworpen."
+    },
+    {
+      "topic": "Wet werkelijk rendement box 3",
+      "summary": "Bij de stemmingen over moties bij het wetsvoorstel voor een nieuw box 3-stelsel op basis van werkelijk rendement werd een groot aantal moties in stemming gebracht, over onder meer een tegenbewijsregeling voor eigen gebruik van onroerend goed, een fiscale regeling voor familiebedrijven en verpachte landbouwgrond, en een uiteindelijke overstap naar een volledige vermogenswinstbelasting.",
+      "party_positions": [
+        {
+          "party": "PVV (Vlottes)",
+          "position": "Wilde uitsluitend gerealiseerde winsten belasten via een vermogenswinstbelasting."
+        },
+        {
+          "party": "coalitie- en rechtse partijen (VVD, CDA, SGP, ChristenUnie, JA21, BBB, PVV, FVD)",
+          "position": "Stemden voor praktische aanpassingen zoals een tegenbewijsregeling en onderzoek naar vakantiewoningen en familiebedrijven."
+        },
+        {
+          "party": "linkse partijen (SP, GroenLinks-PvdA, D66, Volt, PvdD)",
+          "position": "Stemden overwegend tegen deze aanpassingsmoties en tegen de motie van Vlottes."
+        }
+      ],
+      "outcome": "De motie van Vlottes werd na hoofdelijke stemming verworpen (48 voor, 97 tegen); de stemming over de amendementen en het wetsvoorstel zelf is op verzoek van JA21 en de ChristenUnie uitgesteld naar donderdag, met een gesplitste stemming."
     }
   ],
   "key_decisions": [
-    "NVWA investigation into asbestos-contaminated play sand formally initiated",
-    "Contact with industry organizations reinforcing asbest-free product obligations",
-    "Companies committed to removing non-compliant products from shelves and online platforms",
-    "Minister Rijkaart to convey police protection system and body camera funding recommendations to successor cabinet",
-    "Government to provide written explanation of police threat-handling procedures",
-    "State Secretary Tielen to send parliamentary letter detailing past actions and NVWA investigation results before transition",
-    "NVWA to increase inspection result transparency and inter-agency cooperation",
-    "Enhanced sanctioning regime for pesticide violations under consideration",
-    "Flower cultivation sector benchmark system development continuing",
-    "Belgium-Netherlands coordination on product safety and European regulations to continue"
+    "Motie-Vellinga-Beemsterboer over gemeentelijke noodplannen bij extreme regenval unaniem aangenomen.",
+    "Gewijzigde motie-Heutink/Stoffer over versoepeling van nationale Kaderrichtlijn Water-normen aangenomen.",
+    "Motie-Van der Plas over schrappen van nationale koppen op Europese regelgeving aangenomen.",
+    "Motie-Westerveld over onafhankelijk onderzoek naar ZIKOS-afdelingen in de jeugdzorg unaniem aangenomen.",
+    "Motie-Vlottes over een vermogenswinstbelasting in box 3 verworpen na hoofdelijke stemming (48 voor, 97 tegen).",
+    "Stemming over amendementen en het wetsvoorstel Wet werkelijk rendement box 3 uitgesteld naar donderdag, met gesplitste stemming tussen amendementen en wet.",
+    "Instelling van een tijdelijke commissie Wet op de parlementaire enquête voor zes maanden.",
+    "Instemming met de lijst van prioritaire voorstellen uit het wetgevings- en werkprogramma van de Europese Commissie 2026.",
+    "Diverse moties over asielbeleid van Vondeling (PVV) zoals een totale asielstop en intrekken van Syrische verblijfsvergunningen verworpen.",
+    "Motie-Ceulemans/Clemminck tegen aparte azc's voor lhbti'ers aangenomen.",
+    "In het tweeminutendebat Mijnbouw werd de motie voor een standstill op gaswinning onder veenweidegebieden ontraden door de minister; motie over gesprek met provincie Groningen over zoutwinning kreeg oordeel Kamer.",
+    "In het tweeminutendebat Gasmarkt werd de motie om gasopslagen te nationaliseren (Jimmy Dijk) ontraden."
   ],
-  "political_dynamics": "The meeting revealed significant government-opposition tension regarding response adequacy. Multiple parties (JA21, VVD, PVV, SP) criticized the government for procedural rather than concrete responses, particularly regarding police support and asbestos crisis management. The government, operating in a transitional period with limited time before cabinet change, emphasized legal constraints and measures already taken. DENK offered a more balanced perspective on police leadership criticism. Coalition dynamics appear strained, with broad cross-party frustration about implementation gaps, though specific partisan disagreements were limited. The incoming cabinet will inherit commitments on police protection, asbestos monitoring, and regulatory enforcement.",
+  "political_dynamics": "De vergadering stond in het teken van het nieuwe coalitieakkoord van D66, CDA en VVD, dat werd getoetst door zowel coalitiepartners onderling (met plagerijen van de ChristenUnie richting D66 over verminderde klimaatambitie) als door de oppositie. Links (GroenLinks-PvdA, SP, PvdD, Volt, DENK) verweet de coalitie te weinig ambitie op klimaat, vasthouden aan fossiele subsidies en nieuwe gaswinning; rechts (PVV, BBB, JA21, FVD, Groep Markuszower) verweet het kabinet juist te hoge kosten en onrealistisch klimaatbeleid, met veel pleidooien voor kernenergie. Bij het vragenuur over de ondergedoken agent klonk kamerbrede sympathie voor de agent, maar ook brede frustratie over vage antwoorden van de demissionaire minister, die veel vragen doorschoof naar zijn opvolger. Bij de stemmingen tekenden zich de gebruikelijke coalitie-oppositiepatronen af, met wisselende meerderheden per onderwerp. Twee maidenspeeches verliepen in een coöperatieve sfeer zonder interrupties.",
   "next_steps": [
-    "Successor cabinet to receive police protection system and body camera funding recommendations from Minister Rijkaart",
-    "State Secretary Tielen to deliver parliamentary letter on asbestos investigation and historical actions before leaving office",
-    "NVWA to continue asbestos investigation and enhance transparency of inspection results",
-    "Industry monitoring of product compliance removal from retail and online channels",
-    "Belgium-Netherlands coordination meetings on product safety standards to continue",
-    "Flower cultivation sector benchmark system development to proceed under successor cabinet",
-    "Enhanced pesticide regulation sanctioning regime to be evaluated and potentially implemented",
-    "Follow-up on police officer protection measures and morale restoration efforts by new government"
+    "Donderdag 10.25 uur: voortzetting van de begrotingsbehandeling Klimaat en Groene Groei met de beantwoording door de minister in eerste termijn.",
+    "Donderdag: gesplitste stemming over amendementen en het wetsvoorstel Wet werkelijk rendement box 3.",
+    "Toegezegde brief van de staatssecretaris van VWS over de stand van zaken rond asbest in speelzand en de uitkomsten van het NVWA-onderzoek.",
+    "Toegezegde schriftelijke informatie van de minister van Binnenlandse Zaken over hoe de politie omgaat met bedreigingen van agenten.",
+    "Doorgeleiding naar het volgende kabinet van diverse verzoeken, waaronder een gesprek met politie Midden-Nederland en versnelling van SMR-locaties.",
+    "Behandeling van toegevoegde dertigledendebatten over onder meer moslimdiscriminatie, mogelijke buitenlandse beïnvloeding van verkiezingen, ouderenzorg/verwaarlozing, medische evacuaties uit Gaza en asbest in speelzand.",
+    "Gesprek tussen ministerie van Klimaat en Groene Groei en provincie Groningen begin maart over de zoutwinningskwestie bij Zuidwending en Heiligerlee."
+  ],
+  "fact_checks": [
+    {
+      "claim": "De heer Heutink stelde dat voormalig minister Rob Jetten zelf heeft gezegd dat het Nederlandse klimaatbeleid zou leiden tot 0,00036 graden minder opwarming van de aarde.",
+      "speaker": "De heer Heutink (Groep Markuszower)",
+      "assessment": "misleidend",
+      "explanation": "Het genoemde getal circuleert sinds 2023 in Kamerdebatten als kritiek op een specifiek maatregelenpakket van 28 miljard euro, gebaseerd op een berekening van het temperatuureffect volgens klimaatmodellen. Het is geen letterlijk citaat van Jetten zelf, maar een duiding die vooral door tegenstanders van het beleid (onder meer in de Eerste Kamer) aan hem is toegeschreven. Bovendien wordt het getal in verschillende bronnen net anders genoemd (0,000036 en 0,000038 graden), terwijl Heutink een getal noemt dat een factor tien afwijkt van de gangbare citaten (0,00036 in plaats van 0,000036).",
+      "correction": "Het getal is een politieke rekenkundige duiding van het beperkte mondiale temperatuureffect van een Nederlands maatregelenpakket, niet een letterlijke uitspraak van Jetten, en de exacte waarde varieert per bron.",
+      "sources": [
+        "https://zoek.officielebekendmakingen.nl/kst-32813-1288.html",
+        "https://www.eerstekamer.nl/plenair/20231219/dessing"
+      ]
+    },
+    {
+      "claim": "De minister van Landbouw, Visserij, Voedselzekerheid en Natuur zei dat van de 71 NVWA-inspecties bij snijbloementelers onder glas 43 gevallen niet in orde waren, en dat dit neerkomt op 39%.",
+      "speaker": "Mevrouw Wiersma (minister van Landbouw, Visserij, Voedselzekerheid en Natuur)",
+      "assessment": "misleidend",
+      "explanation": "Het aantal van 43 op de 71 inspecties komt rekenkundig neer op ongeveer 60% en niet op 39%. Deze inconsistentie staat exact zo in het officiële verslag van de Tweede Kamer en werd tijdens het debat niet gecorrigeerd. Mogelijk verwarde de minister het percentage niet-naleving uit het onderliggende NVWA-rapport (dat op een andere steekproef of periode gebaseerd kan zijn) met de specifieke 71 inspecties die zij noemde, maar zoals gepresenteerd kloppen de genoemde cijfers niet met elkaar.",
+      "correction": "Op basis van de door de minister zelf genoemde aantallen (43 van de 71 inspecties niet in orde) zou het percentage circa 61% moeten zijn, niet 39%.",
+      "sources": [
+        "https://zoek.officielebekendmakingen.nl/h-tk-20252026-41-4.html",
+        "https://www.tweedekamer.nl/kamerstukken/plenaire_verslagen/kamer_in_het_kort/d66-vraagt-naar-gewasbeschermingsmiddelen"
+      ]
+    }
   ],
   "meeting_info": {
     "vergadering_titel": "41e vergadering, dinsdag 10 februari 2026",
@@ -61,8 +242,11 @@
     "status": "VerslagStatus.ONGECORRIGEERD"
   },
   "processing_info": {
-    "chunks_processed": 15,
-    "total_topics_found": 95,
-    "processing_date": "2026-04-06T19:03:49.896172"
+    "ai_model": "claude-sonnet-5",
+    "processing_date": "2026-08-30T19:09:47.172496+00:00",
+    "input_tokens": 14,
+    "output_tokens": 21017,
+    "web_searches": 12,
+    "transcript_chars": 544480
   }
 }

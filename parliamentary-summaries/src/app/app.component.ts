@@ -27,17 +27,18 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 
 import { SummaryService } from './services/summary.service';
-import { 
-  ParliamentaryDocument, 
-  TopicFilter, 
-  PartyFilter, 
+import {
+  ParliamentaryDocument,
+  TopicFilter,
+  PartyFilter,
   SearchFilter,
   SummaryDisplayOptions,
   TopicDisplayMode,
-  EnhancedPartyPosition,
   ProcessedDocument,
   ProcessedPartyPosition,
-  ProcessedTopic
+  ProcessedTopic,
+  FactCheckAssessment,
+  normalizePartyPositions
 } from './models/parliamentary-summary.model';
 
 @Component({
@@ -112,23 +113,6 @@ export class AppComponent implements OnInit, OnDestroy {
     groupByTopic: true
   };
 
-  // Party colors map (static to avoid repeated lookups)
-  private static readonly PARTY_COLORS: { [key: string]: string } = {
-    'VVD': '#0066CC',
-    'PvdA': '#CC0000',
-    'GroenLinks-PvdA': '#00AA00',
-    'PVV': '#FFD700',
-    'CDA': '#00AA55',
-    'D66': '#FFAA00',
-    'NSC': '#800080',
-    'PvdD': '#006600',
-    'ChristenUnie': '#0099CC',
-    'SGP': '#FF6600',
-    'SP': '#CC0000',
-    'Minister': '#666666',
-    'Voorzitter': '#999999'
-  };
-
   constructor(
     private summaryService: SummaryService,
     private snackBar: MatSnackBar
@@ -181,26 +165,10 @@ export class AppComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe(error => {
       if (error) {
-        this.snackBar.open(error, 'Close', {
+        this.snackBar.open(error, 'Sluiten', {
           duration: 5000,
           panelClass: ['error-snackbar']
         });
-      }
-    });
-
-    // Show success message when documents are loaded
-    this.documentStats$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(stats => {
-      if (stats.totalDocuments > 0) {
-        this.snackBar.open(
-          `Loaded ${stats.totalDocuments} parliamentary documents with ${stats.totalTopics} topics`, 
-          'Close', 
-          {
-            duration: 3000,
-            panelClass: ['success-snackbar']
-          }
-        );
       }
     });
   }
@@ -213,6 +181,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // Preprocessing method for documents
   private preprocessDocument(doc: ParliamentaryDocument): ProcessedDocument {
+    const factChecks = doc.summary.fact_checks ?? [];
+
     return {
       ...doc,
       formattedDate: this.formatDateOnce(doc.date),
@@ -222,32 +192,18 @@ export class AppComponent implements OnInit, OnDestroy {
       hasNextSteps: doc.summary.next_steps?.length > 0,
       nextStepsCount: doc.summary.next_steps?.length || 0,
       hasDecisions: doc.summary.key_decisions.length > 0,
+      factCheckCount: factChecks.length,
+      hasFactChecks: factChecks.length > 0,
       processingDate: this.formatDateOnce(new Date(doc.summary.processing_info.processing_date)),
       summary: {
         ...doc.summary,
         main_topics: doc.summary.main_topics.map(topic => ({
           ...topic,
           hasContext: this.hasTopicContextComputed(topic),
-          partyPositionsArray: this.convertPartyPositions(topic.party_positions)
+          partyPositionsArray: normalizePartyPositions(topic.party_positions)
         }))
       }
     };
-  }
-
-  // Convert party positions to array for easier iteration
-  private convertPartyPositions(positions: { [key: string]: EnhancedPartyPosition | string }): ProcessedPartyPosition[] {
-    return Object.keys(positions).map(party => {
-      const proposals = this.getSpecificProposals(positions[party]);
-      return {
-        party,
-        color: this.getPartyBadgeColorOnce(party),
-        mainPosition: this.getPartyPosition(positions[party]),
-        proposals: proposals,
-        hasProposals: (proposals?.length ?? 0) > 0,
-        reasoning: this.getReasoning(positions[party]),
-        evidence: this.getEvidence(positions[party])
-      };
-    });
   }
 
   // Compute context once
@@ -266,11 +222,6 @@ export class AppComponent implements OnInit, OnDestroy {
       month: 'long', 
       day: 'numeric' 
     });
-  }
-
-  // Get party color once
-  private getPartyBadgeColorOnce(partyName: string): string {
-    return AppComponent.PARTY_COLORS[partyName] || '#666666';
   }
 
   // Fixed: Properly update selectedDocumentId and notify observable
@@ -356,63 +307,29 @@ export class AppComponent implements OnInit, OnDestroy {
     // This will be handled in the template with async pipe
   }
 
-  // Enhanced party position methods (kept for compatibility)
-  getPartyPosition(position: EnhancedPartyPosition | string): string {
-    if (typeof position === 'string') {
-      return position;
-    }
-    return position.position || 'Position not specified';
-  }
-
-  getSpecificProposals(position: EnhancedPartyPosition | string): string[] | null {
-    if (typeof position === 'string') {
-      return null;
-    }
-    return position.specific_proposals || null;
-  }
-
-  getReasoning(position: EnhancedPartyPosition | string): string | null {
-    if (typeof position === 'string') {
-      return null;
-    }
-    return position.reasoning || null;
-  }
-
-  getEvidence(position: EnhancedPartyPosition | string): string | null {
-    if (typeof position === 'string') {
-      return null;
-    }
-    return position.key_evidence || null;
-  }
-
-  // New methods for file management
   async onRefreshDocuments(): Promise<void> {
     await this.summaryService.refreshDocuments();
-    this.snackBar.open('Documents refreshed', 'Close', { duration: 2000 });
+    this.snackBar.open('Documenten vernieuwd', 'Sluiten', { duration: 2000 });
   }
 
-  async onLoadSpecificFiles(): Promise<void> {
-    // This would typically open a dialog or file picker
-    // For now, you can hardcode some filenames for testing
-    const filenames = [
-      'deepseek_summary_84d94edd-499f-4d88-9e06-c5c0cd71b1c4.json',
-      // Add more filenames as needed
-    ];
-    
+  /** Human-readable Dutch label for a fact-check verdict. */
+  assessmentLabel(assessment: FactCheckAssessment): string {
+    const labels: Record<FactCheckAssessment, string> = {
+      onjuist: 'Onjuist',
+      misleidend: 'Misleidend',
+      grotendeels_juist: 'Grotendeels juist',
+      onverifieerbaar: 'Niet te verifiëren'
+    };
+    return labels[assessment] ?? assessment;
+  }
+
+  /** Show a source link by its domain rather than a long URL. */
+  sourceLabel(url: string): string {
     try {
-      await this.summaryService.loadSpecificFiles(filenames);
-      this.snackBar.open(`Attempted to load ${filenames.length} additional files`, 'Close', { duration: 3000 });
-    } catch (error) {
-      this.snackBar.open('Error loading additional files', 'Close', { duration: 3000 });
+      return new URL(url).hostname.replace(/^www\./, '');
+    } catch {
+      return url;
     }
-  }
-
-  // Helper method to show document statistics
-  showDocumentStats(): void {
-    this.documentStats$.pipe(takeUntil(this.destroy$)).subscribe(stats => {
-      const message = `${stats.totalDocuments} documents, ${stats.totalTopics} topics, ${stats.uniqueParties} parties`;
-      this.snackBar.open(message, 'Close', { duration: 5000 });
-    });
   }
 
   // Optimized trackBy functions
@@ -436,8 +353,4 @@ export class AppComponent implements OnInit, OnDestroy {
     return index;
   }
 
-  // Legacy method for backward compatibility
-  getPartyBadgeColor(partyName: string): string {
-    return this.getPartyBadgeColorOnce(partyName);
-  }
 }

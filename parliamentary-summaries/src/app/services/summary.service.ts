@@ -11,7 +11,7 @@ import {
   PartyFilter, 
   SearchFilter,
   EnhancedTopic,
-  EnhancedPartyPosition
+  normalizePartyPositions
 } from '../models/parliamentary-summary.model';
 
 interface SummaryFileInfo {
@@ -69,80 +69,69 @@ export class SummaryService {
     this.errorSubject.next(null);
 
     try {
-      // First, try to get a list of available files
       const summaryFiles = await this.discoverSummaryFiles();
-      
+
       if (summaryFiles.length === 0) {
-        console.warn('No summary files found, creating mock data');
-        this.createEnhancedMockDocument();
-        return;
+        throw new Error('The manifest lists no summaries');
       }
 
-      console.log(`Found ${summaryFiles.length} summary files:`, summaryFiles);
-
-      // Load all files in parallel
-      const loadRequests = summaryFiles.map(fileInfo => 
+      const loadRequests = summaryFiles.map(fileInfo =>
         this.loadSingleSummaryFile(fileInfo)
       );
 
       const results = await forkJoin(loadRequests).toPromise();
-      const validDocuments = results?.filter(doc => doc !== null) as ParliamentaryDocument[];
+      const validDocuments = (results ?? []).filter(
+        (doc): doc is ParliamentaryDocument => doc !== null
+      );
 
-      if (validDocuments && validDocuments.length > 0) {
-        // Sort documents by date (newest first)
-        validDocuments.sort((a, b) => b.date.getTime() - a.date.getTime());
-        
-        this.documentsSubject.next(validDocuments);
-        this.initializeEnhancedFilters(validDocuments);
-        
-        console.log(`Successfully loaded ${validDocuments.length} parliamentary documents`);
-      } else {
-        throw new Error('No valid documents could be loaded');
+      if (validDocuments.length === 0) {
+        throw new Error('No summary file could be read');
+      }
+
+      validDocuments.sort((a, b) => b.date.getTime() - a.date.getTime());
+      this.documentsSubject.next(validDocuments);
+      this.initializeEnhancedFilters(validDocuments);
+
+      const failed = summaryFiles.length - validDocuments.length;
+      if (failed > 0) {
+        // Some summaries loaded; say so rather than pretending all is well.
+        this.errorSubject.next(
+          `${failed} van de ${summaryFiles.length} samenvattingen konden niet worden geladen.`
+        );
       }
     } catch (error) {
+      // Never substitute placeholder content here. These are summaries of real
+      // debates attributed to real parties, and invented stand-ins are
+      // indistinguishable from the real thing once the notice disappears.
       console.error('Error loading summary files:', error);
-      this.errorSubject.next('Failed to load parliamentary data. Using sample data.');
-      this.createEnhancedMockDocument();
+      this.documentsSubject.next([]);
+      this.errorSubject.next(
+        'De samenvattingen konden niet worden geladen. Probeer het opnieuw.'
+      );
     } finally {
       this.loadingSubject.next(false);
     }
   }
 
   /**
-   * Discover available summary files in the assets directory
-   * This method tries different approaches to find files
+   * List the available summary files.
+   *
+   * A browser cannot enumerate a directory, so the build publishes
+   * assets/summaries/manifest.json (written by deploy_summaries.py) and that is
+   * the only source of truth.
    */
   private async discoverSummaryFiles(): Promise<SummaryFileInfo[]> {
-    // Method 1: Try to load a detailed manifest file
-    try {
-      const manifestResponse = await this.http.get<{files: string[], count: number, generated: string}>('assets/summaries/manifest.json').toPromise();
-      if (manifestResponse && manifestResponse.files) {
-        console.log(`Found manifest with ${manifestResponse.count} files (generated: ${manifestResponse.generated})`);
-        return this.parseFileNames(manifestResponse.files);
-      }
-    } catch (error) {
-      console.log('No detailed manifest file found, trying simple file list...');
+    const manifest = await this.http
+      .get<{ files: string[]; count: number; generated: string }>(
+        'assets/summaries/manifest.json'
+      )
+      .toPromise();
+
+    if (!manifest?.files?.length) {
+      throw new Error('manifest.json is empty or missing a files array');
     }
 
-    // Method 2: Try simple file list
-    try {
-      const fileList = await this.http.get<string[]>('assets/summaries/file-list.json').toPromise();
-      if (fileList && fileList.length > 0) {
-        console.log(`Found simple file list with ${fileList.length} files`);
-        return this.parseFileNames(fileList);
-      }
-    } catch (error) {
-      console.log('No file list found, trying alternative discovery methods');
-    }
-
-    // Method 3: Try a predefined list of known patterns
-    const knownFiles = await this.tryKnownFilePatterns();
-    if (knownFiles.length > 0) {
-      return knownFiles;
-    }
-
-    // Method 4: Try common file patterns (this requires you to know some IDs)
-    return this.tryCommonPatterns();
+    return this.parseFileNames(manifest.files);
   }
 
   /**
@@ -169,28 +158,6 @@ export class SummaryService {
         };
       })
       .filter(info => info.id !== 'unknown'); // Only include properly parsed files
-  }
-
-  /**
-   * Try to load files with known patterns
-   */
-  private async tryKnownFilePatterns(): Promise<SummaryFileInfo[]> {
-    // Since we can't easily discover files in a browser environment,
-    // and the manifest.json approach is working, we'll skip this method
-    console.log('Skipping known file patterns discovery - using manifest approach');
-    return [];
-  }
-
-  /**
-   * Try some common file patterns based on your naming convention
-   */
-  private async tryCommonPatterns(): Promise<SummaryFileInfo[]> {
-    // Since we can't easily list files in a browser environment,
-    // you might need to provide a way to discover files
-    
-    // For now, return empty array and rely on manual file list or manifest
-    console.warn('Could not auto-discover files. Consider creating a manifest.json file.');
-    return [];
   }
 
   /**
@@ -276,103 +243,6 @@ export class SummaryService {
     const manifest = JSON.stringify(filenames, null, 2);
     return `Create this file at /assets/summaries/manifest.json:\n\n${manifest}`;
   }
-
-  private createEnhancedMockDocument(): void {
-    const mockSummary: ParliamentarySummary = {
-      executive_summary: "This parliamentary meeting covered climate policy, housing regulation, and agricultural reforms with detailed context and party positions including specific proposals and reasoning.",
-      main_topics: [
-        {
-          topic: "Climate Policy",
-          context: {
-            why_discussed: "EU requirement for 55% emission reduction by 2030",
-            background: "Netherlands currently at 25% reduction, needs urgent action",
-            stakes: "Failure to meet targets results in EU fines and climate damage"
-          },
-          summary: "Discussion about emission reduction targets and energy transition including required infrastructure investments",
-          party_positions: {
-            "VVD": {
-              position: "Advocates for practical implementation",
-              specific_proposals: ["Market-based carbon pricing", "Gradual coal phase-out by 2028"],
-              reasoning: "Avoid damaging economic competitiveness and job losses",
-              key_evidence: "Cited German industry concerns about carbon leakage"
-            },
-            "GroenLinks-PvdA": {
-              position: "Pushes for more ambitious action",
-              specific_proposals: ["Immediate coal phase-out", "Mandatory solar panels on new buildings"],
-              reasoning: "Climate emergency requires urgent action",
-              key_evidence: "Referenced latest IPCC report on tipping points"
-            },
-            "PVV": {
-              position: "Opposes additional measures",
-              specific_proposals: ["Maintain current policies", "No new climate taxes"],
-              reasoning: "Protect citizens from rising energy costs",
-              key_evidence: "Pointed to high energy bills affecting households"
-            }
-          },
-          outcome: "Agreement to address grid investment costs in Spring budget"
-        },
-        {
-          topic: "Housing Regulation",
-          context: {
-            why_discussed: "Rising complaints about housing quality and rent increases",
-            background: "Good Landlord Act enforcement showing mixed results",
-            stakes: "Housing crisis affects 400,000 households seeking affordable housing"
-          },
-          summary: "Enforcement of Good Landlord Act and tenant protection measures",
-          party_positions: {
-            "GroenLinks-PvdA": {
-              position: "Called for stronger enforcement",
-              specific_proposals: ["Higher fines for bad landlords", "Tenant protection fund"],
-              reasoning: "Current enforcement insufficient to protect tenants",
-              key_evidence: "Municipal data showing 40% violation rate"
-            },
-            "VVD": {
-              position: "Supported current framework with improvements",
-              specific_proposals: ["Better coordination between municipalities", "Digital complaint system"],
-              reasoning: "Avoid over-regulation that reduces housing supply",
-              key_evidence: "Industry warning about investment decline"
-            }
-          },
-          outcome: "Minister agreed to gather enforcement data and improve coordination"
-        }
-      ],
-      key_decisions: [
-        "Approval of motion to expedite power grid permits",
-        "Agreement to schedule debate about grid costs within three weeks",
-        "Commitment to gather municipal housing enforcement data by June"
-      ],
-      political_dynamics: "Significant divisions between parties on climate policy implementation speed, with progressive parties pushing for urgency while conservative parties emphasized economic impacts. Housing enforcement saw more consensus on need for improvement.",
-      next_steps: [
-        "Present cost mitigation measures for grid investments in Spring budget",
-        "Develop farm-specific emission targets by end of year",
-        "Municipal housing enforcement data collection by June 2025"
-      ],
-      meeting_info: {
-        vergadering_titel: "61e vergadering, dinsdag 11 maart 2025",
-        vergadering_datum: "2025-03-11T00:00:00+01:00",
-        verslag_id: "mock-enhanced-123",
-        status: "Gecorrigeerd"
-      },
-      processing_info: {
-        chunks_processed: 16,
-        total_topics_found: 2,
-        processing_date: new Date().toISOString(),
-        enhancement_level: 'detailed',
-        ai_model: 'deepseek'
-      }
-    };
-
-    const mockDocument: ParliamentaryDocument = {
-      id: 'mock-enhanced-123',
-      title: '61e vergadering, dinsdag 11 maart 2025',
-      date: new Date('2025-03-11'),
-      summary: mockSummary
-    };
-
-    this.documentsSubject.next([mockDocument]);
-    this.initializeEnhancedFilters([mockDocument]);
-  }
-
   private initializeEnhancedFilters(documents: ParliamentaryDocument[]): void {
     // Extract unique topics with counts
     const topicCounts = new Map<string, number>();
@@ -382,7 +252,7 @@ export class SummaryService {
       doc.summary.main_topics.forEach(topic => {
         topicCounts.set(topic.topic, (topicCounts.get(topic.topic) || 0) + 1);
         
-        Object.keys(topic.party_positions).forEach(party => {
+        normalizePartyPositions(topic.party_positions).forEach(({ party }) => {
           partyCounts.set(party, (partyCounts.get(party) || 0) + 1);
         });
       });
@@ -439,7 +309,7 @@ export class SummaryService {
 
       // Apply party filter
       const hasSelectedParty = doc.summary.main_topics.some(topic =>
-        Object.keys(topic.party_positions).some(party =>
+        normalizePartyPositions(topic.party_positions).some(({ party }) =>
           selectedParties.includes(party)
         )
       );
@@ -486,19 +356,11 @@ export class SummaryService {
     // Add party positions if enabled
     if (searchFilter.includePositions) {
       doc.summary.main_topics.forEach(topic => {
-        Object.values(topic.party_positions).forEach(position => {
-          if (typeof position === 'string') {
-            searchableText.push(position.toLowerCase());
-          } else {
-            searchableText.push(position.position.toLowerCase());
-            
-            // Add specific proposals
-            if (position.specific_proposals) {
-              position.specific_proposals.forEach(proposal => {
-                searchableText.push(proposal.toLowerCase());
-              });
-            }
-          }
+        normalizePartyPositions(topic.party_positions).forEach(position => {
+          searchableText.push(position.mainPosition.toLowerCase());
+          position.proposals?.forEach(proposal =>
+            searchableText.push(proposal.toLowerCase())
+          );
         });
       });
     }
@@ -506,12 +368,12 @@ export class SummaryService {
     // Add reasoning if enabled
     if (searchFilter.includeReasoning) {
       doc.summary.main_topics.forEach(topic => {
-        Object.values(topic.party_positions).forEach(position => {
-          if (typeof position === 'object' && position.reasoning) {
+        normalizePartyPositions(topic.party_positions).forEach(position => {
+          if (position.reasoning) {
             searchableText.push(position.reasoning.toLowerCase());
           }
-          if (typeof position === 'object' && position.key_evidence) {
-            searchableText.push(position.key_evidence.toLowerCase());
+          if (position.evidence) {
+            searchableText.push(position.evidence.toLowerCase());
           }
         });
       });
@@ -579,7 +441,10 @@ export class SummaryService {
         const topics: EnhancedTopic[] = [];
         documents.forEach(doc => {
           doc.summary.main_topics.forEach(topic => {
-            if (topic.party_positions[partyName]) {
+            const speaks = normalizePartyPositions(topic.party_positions).some(
+              ({ party }) => party === partyName
+            );
+            if (speaks) {
               topics.push(topic);
             }
           });
@@ -596,7 +461,7 @@ export class SummaryService {
         documents.forEach(doc => {
           doc.summary.main_topics.forEach(topic => {
             if (topic.topic === topicName) {
-              Object.keys(topic.party_positions).forEach(party => {
+              normalizePartyPositions(topic.party_positions).forEach(({ party }) => {
                 parties.add(party);
               });
             }
@@ -640,7 +505,9 @@ export class SummaryService {
         documents.forEach(doc => {
           // Count parties
           doc.summary.main_topics.forEach(topic => {
-            Object.keys(topic.party_positions).forEach(party => allParties.add(party));
+            normalizePartyPositions(topic.party_positions).forEach(({ party }) =>
+              allParties.add(party)
+            );
           });
           
           // Count models
