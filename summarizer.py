@@ -261,11 +261,22 @@ def extract_summary(
         raise ValueError("no text block in response")
 
     summary = json.loads(text)
+    usage = message.usage
+
+    # The transcript is a cached prefix, so `input_tokens` counts only the few
+    # uncached tokens. The real spend is in the cache write, plus a cache read
+    # for every iteration of the server-side web-search loop, which re-reads the
+    # whole transcript each time it searches. Record all three or the numbers
+    # look implausibly small.
     summary["meeting_info"] = info
     summary["processing_info"] = {
         "ai_model": message.model,
         "processing_date": datetime.now(timezone.utc).isoformat(),
-        "input_tokens": message.usage.input_tokens,
+        "input_tokens": usage.input_tokens,
+        "cache_creation_input_tokens": getattr(
+            usage, "cache_creation_input_tokens", 0
+        ) or 0,
+        "cache_read_input_tokens": getattr(usage, "cache_read_input_tokens", 0) or 0,
         "output_tokens": message.usage.output_tokens,
         "web_searches": getattr(
             getattr(message.usage, "server_tool_use", None), "web_search_requests", 0

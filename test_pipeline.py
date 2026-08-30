@@ -180,7 +180,9 @@ class TestExtractSummary(unittest.TestCase):
             model=model,
             stop_reason="end_turn",
             usage=SimpleNamespace(
-                input_tokens=250_000,
+                input_tokens=14,
+                cache_creation_input_tokens=250_000,
+                cache_read_input_tokens=3_000_000,
                 output_tokens=4_000,
                 server_tool_use=SimpleNamespace(web_search_requests=3),
             ),
@@ -204,6 +206,16 @@ class TestExtractSummary(unittest.TestCase):
         self.assertEqual(summary["processing_info"]["ai_model"], "claude-sonnet-5")
         self.assertEqual(summary["processing_info"]["web_searches"], 3)
         self.assertEqual(summary["processing_info"]["transcript_chars"], 1234)
+
+    def test_cached_tokens_are_recorded(self):
+        """
+        The transcript is a cached prefix, so input_tokens alone is misleading:
+        the spend sits in the cache write and the search loop's cache reads.
+        """
+        info = summarizer.extract_summary(self.message(self.payload()), {}, 0)
+        proc = info["processing_info"]
+        self.assertEqual(proc["cache_creation_input_tokens"], 250_000)
+        self.assertEqual(proc["cache_read_input_tokens"], 3_000_000)
 
     def test_missing_text_block_is_an_error(self):
         message = SimpleNamespace(content=[], model="m", usage=SimpleNamespace())
