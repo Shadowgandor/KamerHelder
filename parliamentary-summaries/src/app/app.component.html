@@ -55,6 +55,9 @@
             <div class="list-item-meta">
               <span><mat-icon>topic</mat-icon>{{ document.topicCount }}</span>
               <span><mat-icon>check_circle</mat-icon>{{ document.decisionCount }}</span>
+              <span *ngIf="document.hasFactChecks" [matTooltip]="document.factCheckCount + ' feitencheck(s)'">
+                <mat-icon>fact_check</mat-icon>{{ document.factCheckCount }}
+              </span>
               <span class="list-item-model">{{ document.summary.processing_info.ai_model || 'AI' }}</span>
             </div>
           </div>
@@ -160,12 +163,46 @@
           </ul>
         </section>
 
+        <!-- Fact checks -->
+        <section *ngIf="doc.hasFactChecks" class="detail-section">
+          <h2><mat-icon>fact_check</mat-icon> Feitencheck ({{ doc.factCheckCount }})</h2>
+          <p class="factcheck-intro">
+            Verifieerbare beweringen uit dit debat, gecontroleerd tegen officiële bronnen.
+          </p>
+          <div class="factcheck-list">
+            <div
+              *ngFor="let fc of doc.summary.fact_checks; trackBy: trackByIndex"
+              class="factcheck-card"
+              [class]="'assessment-' + fc.assessment">
+              <div class="factcheck-head">
+                <span class="assessment-badge">{{ assessmentLabel(fc.assessment) }}</span>
+                <span class="factcheck-speaker">{{ fc.speaker }}</span>
+              </div>
+              <blockquote class="factcheck-claim">{{ fc.claim }}</blockquote>
+              <p class="factcheck-explanation">{{ fc.explanation }}</p>
+              <p *ngIf="fc.correction" class="factcheck-correction">
+                <strong>Correctie:</strong> {{ fc.correction }}
+              </p>
+              <div *ngIf="fc.sources?.length" class="factcheck-sources">
+                <span>Bronnen:</span>
+                <a
+                  *ngFor="let src of fc.sources; trackBy: trackByIndex"
+                  [href]="src"
+                  target="_blank"
+                  rel="noopener noreferrer">{{ sourceLabel(src) }}</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- Processing info -->
         <section class="detail-section processing-section">
           <div class="processing-chips">
-            <span class="proc-chip">{{ doc.summary.processing_info.chunks_processed }} chunks</span>
             <span class="proc-chip">{{ doc.summary.processing_info.ai_model || 'AI' }}</span>
             <span class="proc-chip">{{ doc.processingDate }}</span>
+            <span *ngIf="doc.summary.processing_info.web_searches" class="proc-chip">
+              {{ doc.summary.processing_info.web_searches }} bronnen geraadpleegd
+            </span>
           </div>
         </section>
       </div>

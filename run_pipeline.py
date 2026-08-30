@@ -2,17 +2,22 @@
 Pipeline runner: fetches, processes, and summarizes Tweede Kamer parliamentary data.
 
 Usage:
-    python run_pipeline.py                  # Full pipeline with DeepSeek
-    python run_pipeline.py --summarizer claude
-    python run_pipeline.py --start-from document_processor
+    python run_pipeline.py                          # fetch, parse, queue a batch
+    python run_pipeline.py --summarize sync         # summarize immediately instead
+    python run_pipeline.py --start-from summarizer
     python run_pipeline.py --days 60 --max-items 150
+
+Summarization defaults to the Batch API, which is half price but asynchronous.
+Collect a queued batch with:
+
+    python summarizer.py --mode collect
 """
 
 import argparse
+import json
+import os
 import subprocess
 import sys
-import os
-import json
 from pathlib import Path
 
 
@@ -23,19 +28,10 @@ STEPS = [
     "summarizer",
 ]
 
-STEP_OUTPUTS = {
-    "tk_data_retriever": "plenaire_verslagen.json",
-    "document_processor": "verslagen_with_content.json",
-    "xml_text_extractor": "verslagen_parsed.json",
-}
 
-
-def run_script(script: str, extra_env: dict = None, extra_args: list = None):
-    env = os.environ.copy()
-    if extra_env:
-        env.update(extra_env)
+def run_script(script: str, extra_args: list = None):
     cmd = [sys.executable, f"{script}.py"] + (extra_args or [])
-    result = subprocess.run(cmd, env=env)
+    result = subprocess.run(cmd)
     if result.returncode != 0:
         print(f"\nStep '{script}' failed with exit code {result.returncode}. Aborting.")
         sys.exit(result.returncode)
@@ -56,10 +52,11 @@ def check_prerequisite(filename: str, step: str):
 def main():
     parser = argparse.ArgumentParser(description="Run the KamerHelder pipeline")
     parser.add_argument(
-        "--summarizer",
-        choices=["claude", "deepseek"],
-        default="deepseek",
-        help="LLM to use for summarization (default: deepseek)",
+        "--summarize",
+        choices=["submit", "sync", "none"],
+        default="submit",
+        help="submit queues a Batch API job (default, 50%% cheaper); "
+        "sync summarizes immediately; none stops after parsing",
     )
     parser.add_argument(
         "--start-from",
@@ -87,7 +84,10 @@ def main():
 
     if start_index == 0:
         print("Step 1/4: Fetching parliamentary data...")
-        run_script("tk_data_retriever", extra_args=["--days", str(args.days), "--max-items", str(args.max_items)])
+        run_script(
+            "tk_data_retriever",
+            ["--days", str(args.days), "--max-items", str(args.max_items)],
+        )
         check_prerequisite("plenaire_verslagen.json", "tk_data_retriever")
     else:
         print("Step 1/4: Skipping (--start-from)")
@@ -108,26 +108,30 @@ def main():
     else:
         print("Step 3/4: Skipping (--start-from)")
 
-    if start_index <= 3:
-        print(f"\nStep 4/4: Summarizing with {args.summarizer}...")
+    if start_index <= 3 and args.summarize != "none":
+        print(f"\nStep 4/4: Summarizing ({args.summarize})...")
         check_prerequisite("verslagen_parsed.json", "xml_text_extractor")
-
-        if args.summarizer == "claude":
-            if not os.getenv("ANTHROPIC_API_KEY"):
-                print("ANTHROPIC_API_KEY environment variable is not set.")
-                sys.exit(1)
-            run_script("claude_summarizer")
-        else:
-            if not os.getenv("DEEPSEEK_API_KEY"):
-                print("DEEPSEEK_API_KEY environment variable is not set.")
-                sys.exit(1)
-            run_script("deepseek_summarizer")
+        if not os.getenv("ANTHROPIC_API_KEY"):
+            print("ANTHROPIC_API_KEY environment variable is not set.")
+            sys.exit(1)
+        run_script("summarizer", ["--mode", args.summarize])
+    elif args.summarize == "none":
+        print("\nStep 4/4: Skipping summarization (--summarize none)")
 
     print("\n=== Pipeline complete! ===")
-    summaries = list(Path(".").glob("*summary_*.json"))
-    print(f"Generated {len(summaries)} summary file(s).")
-    print("\nNext step: deploy summaries to the Angular app:")
-    print("  python deploy_summaries.py")
+
+    if args.summarize == "none":
+        print("\nTranscripts are parsed. Summarize them with:")
+        print("  python summarizer.py --mode submit")
+    elif args.summarize == "submit":
+        print("\nA batch has been queued. Once it finishes (usually within an hour):")
+        print("  python summarizer.py --mode collect")
+        print("  python deploy_summaries.py")
+    else:
+        summaries = list(Path(".").glob("summary_*.json"))
+        print(f"Generated {len(summaries)} summary file(s).")
+        print("\nNext step: deploy summaries to the Angular app:")
+        print("  python deploy_summaries.py")
 
 
 if __name__ == "__main__":

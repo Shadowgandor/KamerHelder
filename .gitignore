@@ -14,10 +14,11 @@ verslagen_with_content_partial.json
 verslagen_with_content_progress_*.json
 verslagen_parsed.json
 summary_*.json
-deepseek_summary_*.json
 !parliamentary-summaries/src/assets/summaries/summary_*.json
-!parliamentary-summaries/src/assets/summaries/deepseek_summary_*.json
 documents/
+
+# batch_state.json is deliberately NOT ignored: the nightly workflow commits it
+# so the next run can collect the batch it submitted.
 
 # Angular
 parliamentary-summaries/node_modules/

@@ -7,15 +7,49 @@ export interface ParliamentarySummary {
   key_decisions: string[];
   political_dynamics: string;
   next_steps: string[];
+  fact_checks?: FactCheck[];
   meeting_info: MeetingInfo;
   processing_info: ProcessingInfo;
+}
+
+/**
+ * A verifiable claim the summarizer checked against official sources.
+ * Only produced by summaries generated from 2026-08 onwards.
+ */
+export interface FactCheck {
+  claim: string;
+  speaker: string;
+  assessment: FactCheckAssessment;
+  explanation: string;
+  correction: string;
+  sources: string[];
+}
+
+export type FactCheckAssessment =
+  | 'onjuist'
+  | 'misleidend'
+  | 'grotendeels_juist'
+  | 'onverifieerbaar';
+
+/**
+ * Positions are an array of {party, position} in current summaries. Summaries
+ * generated before the single-pass rewrite used a party-keyed object, and those
+ * files are still served, so both shapes must be readable.
+ */
+export type PartyPositions =
+  | PartyPositionEntry[]
+  | { [party: string]: EnhancedPartyPosition | string };
+
+export interface PartyPositionEntry {
+  party: string;
+  position: string;
 }
 
 export interface EnhancedTopic {
   topic: string;
   context?: TopicContext;
   summary: string;
-  party_positions: { [party: string]: EnhancedPartyPosition | string };
+  party_positions: PartyPositions;
   outcome: string;
 }
 
@@ -41,11 +75,17 @@ export interface MeetingInfo {
 }
 
 export interface ProcessingInfo {
-  chunks_processed: number;
-  total_topics_found: number;
   processing_date: string;
-  enhancement_level?: string;
   ai_model?: string;
+  input_tokens?: number;
+  output_tokens?: number;
+  web_searches?: number;
+  transcript_chars?: number;
+  note?: string;
+  /** Only present on summaries produced by the old chunked pipeline. */
+  chunks_processed?: number;
+  total_topics_found?: number;
+  enhancement_level?: string;
 }
 
 export interface ParliamentaryDocument {
@@ -103,6 +143,8 @@ export interface ProcessedDocument extends ParliamentaryDocument {
   hasNextSteps: boolean;
   nextStepsCount: number;
   hasDecisions: boolean;
+  factCheckCount: number;
+  hasFactChecks: boolean;
   processingDate: string;
   summary: ProcessedSummary;
 }
@@ -235,6 +277,8 @@ export function hasTopicContext(topic: EnhancedTopic): boolean {
 
 // Utility functions for data transformation
 export function createProcessedDocument(doc: ParliamentaryDocument, formatDate: (date: Date) => string): ProcessedDocument {
+  const factChecks = doc.summary.fact_checks ?? [];
+
   return {
     ...doc,
     formattedDate: formatDate(doc.date),
@@ -244,6 +288,8 @@ export function createProcessedDocument(doc: ParliamentaryDocument, formatDate: 
     hasNextSteps: doc.summary.next_steps?.length > 0,
     nextStepsCount: doc.summary.next_steps?.length || 0,
     hasDecisions: doc.summary.key_decisions.length > 0,
+    factCheckCount: factChecks.length,
+    hasFactChecks: factChecks.length > 0,
     processingDate: formatDate(new Date(doc.summary.processing_info.processing_date)),
     summary: {
       ...doc.summary,
@@ -256,10 +302,27 @@ export function createProcessedTopic(topic: EnhancedTopic): ProcessedTopic {
   return {
     ...topic,
     hasContext: hasTopicContext(topic),
-    partyPositionsArray: Object.keys(topic.party_positions).map(party => 
-      createProcessedPartyPosition(party, topic.party_positions[party])
-    )
+    partyPositionsArray: normalizePartyPositions(topic.party_positions)
   };
+}
+
+/**
+ * Flatten either party-position shape into one array the template can iterate.
+ */
+export function normalizePartyPositions(positions: PartyPositions | null | undefined): ProcessedPartyPosition[] {
+  if (!positions) {
+    return [];
+  }
+
+  if (Array.isArray(positions)) {
+    return positions.map(entry =>
+      createProcessedPartyPosition(entry.party, entry.position)
+    );
+  }
+
+  return Object.keys(positions).map(party =>
+    createProcessedPartyPosition(party, positions[party])
+  );
 }
 
 export function createProcessedPartyPosition(

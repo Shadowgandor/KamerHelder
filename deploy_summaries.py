@@ -7,44 +7,43 @@ Usage:
 
 import json
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 ASSETS_DIR = Path("parliamentary-summaries/src/assets/summaries")
-PATTERNS = ["summary_*.json", "deepseek_summary_*.json"]
+PATTERN = "summary_*.json"
 
 
 def main():
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
-    summary_files = []
-    for pattern in PATTERNS:
-        summary_files.extend(Path(".").glob(pattern))
-
-    if not summary_files:
-        print("No summary files found. Run the pipeline first.")
-        return
+    summary_files = sorted(Path(".").glob(PATTERN))
 
     copied = []
     for src in summary_files:
-        dst = ASSETS_DIR / src.name
-        shutil.copy2(src, dst)
+        shutil.copy2(src, ASSETS_DIR / src.name)
         copied.append(src.name)
         print(f"  Copied: {src.name}")
 
-    all_files = sorted(f.name for pattern in PATTERNS for f in ASSETS_DIR.glob(pattern))
+    # The manifest lists everything in the assets directory, not just what this
+    # run copied, so the app still sees summaries from previous runs.
+    all_files = sorted(f.name for f in ASSETS_DIR.glob(PATTERN))
+    if not all_files:
+        print("No summaries found. Run the pipeline first.")
+        return
+
     manifest = {
         "files": all_files,
         "count": len(all_files),
-        "generated": datetime.now().isoformat(),
+        "generated": datetime.now(timezone.utc).isoformat(),
     }
     manifest_path = ASSETS_DIR / "manifest.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
 
-    print(f"\nDeployed {len(copied)} file(s) to {ASSETS_DIR}")
+    print(f"\nCopied {len(copied)} new file(s); manifest lists {len(all_files)}.")
     print(f"Manifest written to {manifest_path}")
-    print("\nStart the Angular app with:")
-    print("  cd parliamentary-summaries && npm start")
 
 
 if __name__ == "__main__":

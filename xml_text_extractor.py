@@ -1,266 +1,329 @@
+"""
+Parses VLOS XML meeting reports into a structured, attributed transcript.
+
+Reads verslagen_with_content.json, writes verslagen_parsed.json with a
+`readable_text` field per verslag.
+
+The transcript preserves the structure the VLOS format already encodes:
+agenda items become headings, every contribution is attributed to a named
+speaker with their fractie, interruptions are marked as such, and motion texts
+are reproduced verbatim. Previous versions of this script space-joined every
+element's text into a single line, which discarded all of that (and silently
+dropped element tails).
+"""
+
 import json
+import re
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Optional
-import re
-from datetime import datetime
+
+NS = "{http://www.tweedekamer.nl/ggm/vergaderverslag/v1.0}"
+
+# The opening of every plenary lists all present members and ministers by name,
+# spread over several paragraphs. It is ~2000 characters of pure noise for
+# summarization, so collapse it up to the next heading or speaker turn.
+ROLL_CALL_RE = re.compile(
+    r"Aanwezig zijn\s+\d+\s+leden der Kamer,\s*te weten:.*?(?=\n\n(?:#|\*\*)|\Z)",
+    re.DOTALL,
+)
+
+
+def local(elem) -> str:
+    """Tag name without the VLOS namespace prefix."""
+    return elem.tag.replace(NS, "")
+
+
+def text_of(elem) -> str:
+    """
+    Full text of an element including the tails of inline children.
+
+    `<alineaitem>Mevrouw <nadruk>Armut</nadruk> (CDA):</alineaitem>` must come
+    out as "Mevrouw Armut (CDA):" — reading only `.text` loses " (CDA):".
+    """
+    return re.sub(r"\s+", " ", "".join(elem.itertext())).strip()
+
+
+def child_text(elem, tag: str) -> Optional[str]:
+    child = elem.find(f"{NS}{tag}")
+    if child is None:
+        return None
+    value = text_of(child)
+    return value or None
+
 
 class VLOSDocumentParser:
-    """
-    Parser for VLOS (Verslaglegging Ondersteunend Systeem) XML documents
-    """
-    
+    """Turns a VLOS XML document into a structured transcript."""
+
     def __init__(self):
-        self.namespace = "{http://www.tweedekamer.nl/ggm/vergaderverslag/v1.0}"
-    
-    def clean_xml_content(self, xml_content: str) -> str:
-        """Clean up the XML content by removing the BOM and other artifacts"""
-        # Remove BOM (Byte Order Mark) if present
-        if xml_content.startswith('\ufeff'):
-            xml_content = xml_content[1:]
-        
-        # Remove any leading non-XML characters
-        xml_start = xml_content.find('<?xml')
-        if xml_start > 0:
-            xml_content = xml_content[xml_start:]
-        
-        return xml_content
-    
-    def parse_vergadering_info(self, root) -> Dict:
-        """Extract meeting information from the XML"""
-        vergadering = root.find(f"{self.namespace}vergadering")
-        if vergadering is None:
-            return {}
-        
-        info = {
-            'soort': vergadering.get('soort'),
-            'kamer': vergadering.get('kamer'),
-            'titel': self.get_text(vergadering, 'titel'),
-            'zaal': self.get_text(vergadering, 'zaal'),
-            'vergaderjaar': self.get_text(vergadering, 'vergaderjaar'),
-            'vergaderingnummer': self.get_text(vergadering, 'vergaderingnummer'),
-            'datum': self.get_text(vergadering, 'datum'),
-            'aanvangstijd': self.get_text(vergadering, 'aanvangstijd'),
-        }
-        
-        return {k: v for k, v in info.items() if v}
-    
-    def get_text(self, element, tag_name):
-        """Safely get text from an XML element"""
-        child = element.find(f"{self.namespace}{tag_name}")
-        return child.text if child is not None else None
-    
-    def parse_agendapunten(self, root) -> List[Dict]:
-        """Extract agenda items from the XML"""
-        agendapunten = []
-        
-        # Look for agendapunt elements
-        for agendapunt in root.findall(f".//{self.namespace}agendapunt"):
-            item = {
-                'nummer': agendapunt.get('nummer'),
-                'onderwerp': self.get_text(agendapunt, 'onderwerp'),
-                'tekst': self.extract_agendapunt_text(agendapunt)
-            }
-            agendapunten.append(item)
-        
-        return agendapunten
-    
-    def extract_agendapunt_text(self, agendapunt) -> str:
-        """Extract all text content from an agenda item"""
-        text_parts = []
-        
-        # Get text from various elements within the agendapunt
-        for elem in agendapunt.iter():
-            if elem.text and elem.text.strip():
-                text_parts.append(elem.text.strip())
-        
-        return ' '.join(text_parts)
-    
-    def parse_sprekers(self, root) -> List[Dict]:
-        """Extract speaker information and their contributions"""
-        sprekers = []
-        
-        # Look for spreker elements
-        for spreker in root.findall(f".//{self.namespace}spreker"):
-            speaker_info = {
-                'naam': spreker.get('naam'),
-                'functie': spreker.get('functie'),
-                'fractie': spreker.get('fractie'),
-                'tekst': self.extract_spreker_text(spreker)
-            }
-            sprekers.append(speaker_info)
-        
-        return sprekers
-    
-    def extract_spreker_text(self, spreker) -> str:
-        """Extract all text content from a speaker's contribution"""
-        text_parts = []
-        
-        for elem in spreker.iter():
-            if elem.text and elem.text.strip():
-                text_parts.append(elem.text.strip())
-        
-        return ' '.join(text_parts)
-    
-    def extract_all_text(self, root) -> str:
-        """Extract all readable text from the document"""
-        text_parts = []
-        
-        # Walk through all elements and collect text
-        for elem in root.iter():
-            if elem.text and elem.text.strip():
-                text = elem.text.strip()
-                # Skip very short strings and timestamps
-                if len(text) > 3 and not re.match(r'^\d{4}-\d{2}-\d{2}T', text):
-                    text_parts.append(text)
-        
-        # Join and clean up the text
-        full_text = ' '.join(text_parts)
-        
-        # Clean up multiple spaces
-        full_text = re.sub(r'\s+', ' ', full_text)
-        
-        return full_text.strip()
-    
+        self.speakers: Dict[str, str] = {}
+        # Recently emitted headings, used to suppress the format's habit of
+        # restating the same title at several nesting levels.
+        self.recent_headings: List[str] = []
+
+    # ---------------------------------------------------------------- speakers
+
+    def describe_speaker(self, spreker, is_chair: bool) -> str:
+        """
+        Build a display label like "Mevrouw Armut (CDA)" or
+        "Minister Hermans (Volksgezondheid, Welzijn en Sport)".
+        """
+        if is_chair:
+            return "De voorzitter"
+
+        # `verslagnaam` is the form used in the record ("Van Ark"); `weergavenaam`
+        # is sorted for indexes ("Ark van") and reads wrong in running text.
+        naam = child_text(spreker, "verslagnaam") or child_text(spreker, "achternaam")
+        if not naam:
+            return "Onbekende spreker"
+
+        aanhef = child_text(spreker, "aanhef")
+        fractie = child_text(spreker, "fractie")
+        functie = child_text(spreker, "functie")
+
+        # Members of parliament are identified by their party; members of
+        # government by their portfolio, which lives in `functie`.
+        if fractie:
+            qualifier = fractie
+        elif functie and functie.lower() != "lid tweede kamer":
+            qualifier = functie
+        else:
+            qualifier = None
+
+        label = f"{aanhef} {naam}".strip() if aanhef else naam
+        if qualifier:
+            label = f"{label} ({qualifier})"
+            self.speakers[naam] = qualifier
+
+        return label
+
+    # ------------------------------------------------------------- text blocks
+
+    def motion_block(self, groep) -> str:
+        """Reproduce a motion verbatim — motions are the substance of decisions."""
+        lines = [text_of(item) for item in groep.iter(f"{NS}alineaitem")]
+        return "> MOTIE:\n> " + "\n> ".join(line for line in lines if line)
+
+    def collect_content(self, node, acc: List[str]) -> None:
+        """
+        Gather every paragraph and motion under `node`, in document order.
+
+        Paragraph text can sit at any depth — directly under <tekst>, inside an
+        <alineagroep>, or nested in a <draadboekfragment> — so this recurses
+        rather than looking in specific places.
+        """
+        tag = local(node)
+
+        # Interruptions are nested inside the interrupted speaker's turn. Stop
+        # here so their words are attributed to the interrupter, not absorbed
+        # into the surrounding turn; the walker renders them separately.
+        if tag in ("woordvoerder", "interrumpant") and node is not self.turn_root:
+            return
+
+        if tag == "alineagroep" and node.get("type") == "Motietekst":
+            block = self.motion_block(node)
+            if block.strip("> MOTIE:\n>"):
+                acc.append(block)
+            return
+
+        if tag == "alinea":
+            for item in node.iter(f"{NS}alineaitem"):
+                value = text_of(item)
+                if value:
+                    acc.append(value)
+            return
+
+        for child in node:
+            self.collect_content(child, acc)
+
+    def nested_turns(self, node):
+        """Yield the nearest speaker-turn descendants of `node`."""
+        for child in node:
+            if local(child) in ("woordvoerder", "interrumpant"):
+                yield child
+            else:
+                yield from self.nested_turns(child)
+
+    def render_turn(self, container) -> List[str]:
+        """Render one <woordvoerder> or <interrumpant> block."""
+        spreker = container.find(f"{NS}spreker")
+        if spreker is None:
+            return []
+
+        is_chair = (child_text(container, "isvoorzitter") or "").lower() == "true"
+        label = self.describe_speaker(spreker, is_chair)
+
+        lines: List[str] = []
+        self.turn_root = container
+        self.collect_content(container, lines)
+        self.turn_root = None
+
+        # VLOS repeats the speaker label as the first paragraph of each turn
+        # ("Mevrouw Armut (CDA):"). We emit our own header, so drop the copy.
+        surname = (child_text(spreker, "verslagnaam") or "").split()[-1:]
+        surname = surname[0].lower() if surname else ""
+
+        def is_label(line: str) -> bool:
+            if not line.endswith(":") or len(line) > 60:
+                return False
+            lowered = line.lower()
+            # The chair's turns are labelled by role rather than by name.
+            return lowered == "de voorzitter:" or (surname and surname in lowered)
+
+        while lines and is_label(lines[0]):
+            lines = lines[1:]
+
+        if not lines:
+            return []
+
+        if local(container) == "interrumpant":
+            label = f"{label} [interruptie]"
+
+        return [f"**{label}:**", *lines]
+
+    # ------------------------------------------------------------------- walk
+
+    def render(self, elem, out: List[str], depth: int = 0) -> None:
+        """Walk the document in order, emitting headings and speaker turns."""
+        tag = local(elem)
+
+        if tag in ("woordvoerder", "interrumpant"):
+            block = self.render_turn(elem)
+            if block:
+                out.append("\n".join(block))
+            # An interruption sits inside the turn it interrupts, so keep
+            # descending — but only into the nested turns themselves, since
+            # render_turn already consumed everything else at this level.
+            for nested in self.nested_turns(elem):
+                self.render(nested, out, depth + 1)
+            return
+
+        if tag in ("activiteit", "activiteithoofd", "activiteitdeel"):
+            # A "Spreekbeurt" section is titled after the speaker it contains,
+            # which the turn's own header already states.
+            if elem.get("soort") != "Spreekbeurt":
+                heading = child_text(elem, "onderwerp") or child_text(elem, "titel")
+                if heading and heading not in self.recent_headings:
+                    level = "##" if tag == "activiteit" else "###"
+                    out.append(f"{level} {heading}")
+                    self.recent_headings.append(heading)
+                    del self.recent_headings[:-3]
+
+        # Anything reached here is outside a speaker turn (turns return early),
+        # so it is narrative — chair announcements, procedural notes, motion
+        # outcomes. Collect it and stop descending; the collector is recursive.
+        elif tag in ("tekst", "draadboekfragment"):
+            content: List[str] = []
+            self.collect_content(elem, content)
+            out.extend(p for p in content if p not in self.recent_headings)
+            return
+
+        for child in elem:
+            self.render(child, out, depth + 1)
+
+    # ------------------------------------------------------------------ public
+
     def parse_document(self, xml_content: str) -> Dict:
-        """
-        Parse a VLOS XML document and extract structured information
-        
-        Args:
-            xml_content: Raw XML content string
-            
-        Returns:
-            Dictionary with parsed document information
-        """
         try:
-            # Clean the XML content
-            cleaned_xml = self.clean_xml_content(xml_content)
-            
-            # Parse XML
-            root = ET.fromstring(cleaned_xml)
-            
-            # Extract document metadata
-            document_info = {
-                'message_id': root.get('MessageID'),
-                'source': root.get('Source'),
-                'message_type': root.get('MessageType'),
-                'timestamp': root.get('Timestamp'),
-                'soort': root.get('soort'),
-                'status': root.get('status'),
-                'versie': root.get('versie'),
-            }
-            
-            # Extract meeting information
-            vergadering_info = self.parse_vergadering_info(root)
-            
-            # Extract agenda items
-            agendapunten = self.parse_agendapunten(root)
-            
-            # Extract speakers
-            sprekers = self.parse_sprekers(root)
-            
-            # Extract all text content
-            full_text = self.extract_all_text(root)
-            
+            xml_content = xml_content.lstrip("﻿")
+            start = xml_content.find("<?xml")
+            if start > 0:
+                xml_content = xml_content[start:]
+
+            root = ET.fromstring(xml_content)
+            self.speakers = {}
+            self.recent_headings = []
+
+            vergadering = root.find(f"{NS}vergadering")
+            meeting = {}
+            if vergadering is not None:
+                meeting = {
+                    "soort": vergadering.get("soort"),
+                    "kamer": vergadering.get("kamer"),
+                    "titel": child_text(vergadering, "titel"),
+                    "vergaderjaar": child_text(vergadering, "vergaderjaar"),
+                    "vergaderingnummer": child_text(vergadering, "vergaderingnummer"),
+                    "datum": child_text(vergadering, "datum"),
+                }
+                meeting = {k: v for k, v in meeting.items() if v}
+
+            out: List[str] = []
+            self.render(vergadering if vergadering is not None else root, out)
+
+            full_text = "\n\n".join(block for block in out if block.strip())
+            full_text = ROLL_CALL_RE.sub(
+                "Aanwezig zijn de leden der Kamer.", full_text
+            )
+
+            agenda = [
+                child_text(a, "onderwerp") or child_text(a, "titel")
+                for a in root.iter(f"{NS}activiteit")
+            ]
+            agenda = [a for a in agenda if a]
+
             return {
-                'document_info': document_info,
-                'vergadering_info': vergadering_info,
-                'agendapunten': agendapunten,
-                'sprekers': sprekers,
-                'full_text': full_text,
-                'text_length': len(full_text),
-                'num_agendapunten': len(agendapunten),
-                'num_sprekers': len(sprekers),
-                'parsed_successfully': True
-            }
-            
-        except ET.XMLSyntaxError as e:
-            return {
-                'error': f'XML parsing error: {e}',
-                'parsed_successfully': False
-            }
-        except Exception as e:
-            return {
-                'error': f'General parsing error: {e}',
-                'parsed_successfully': False
+                "vergadering_info": meeting,
+                "agendapunten": agenda,
+                "sprekers": self.speakers,
+                "full_text": full_text,
+                "text_length": len(full_text),
+                "num_agendapunten": len(agenda),
+                "num_sprekers": len(self.speakers),
+                "parsed_successfully": True,
             }
 
+        except ET.ParseError as e:
+            return {"error": f"XML parsing error: {e}", "parsed_successfully": False}
+        except Exception as e:
+            return {"error": f"General parsing error: {e}", "parsed_successfully": False}
+
+
 def process_verslagen_with_xml_parsing():
-    """
-    Process the verslagen with content and parse the XML properly
-    """
     print("=== Processing VLOS XML Documents ===")
-    
+
     try:
-        # Load the verslagen with content
-        with open('verslagen_with_content.json', 'r', encoding='utf-8') as f:
+        with open("verslagen_with_content.json", "r", encoding="utf-8") as f:
             verslagen = json.load(f)
-        
-        parser = VLOSDocumentParser()
-        processed_verslagen = []
-        
-        for i, verslag in enumerate(verslagen):
-            print(f"\n--- Processing {i+1}/{len(verslagen)} ---")
-            print(f"Verslag: {verslag.get('vergadering_titel', 'Unknown')}")
-            
-            if verslag.get('content_extracted') and verslag.get('document_text'):
-                # Parse the XML content
-                parsed_content = parser.parse_document(verslag['document_text'])
-                
-                if parsed_content.get('parsed_successfully'):
-                    print(f"✓ Successfully parsed XML")
-                    print(f"  - Text length: {parsed_content['text_length']} characters")
-                    print(f"  - Agenda items: {parsed_content['num_agendapunten']}")
-                    print(f"  - Speakers: {parsed_content['num_sprekers']}")
-                    
-                    # Add parsed content to verslag
-                    verslag['parsed_content'] = parsed_content
-                    verslag['readable_text'] = parsed_content['full_text']
-                    verslag['summary_ready'] = True
-                    
-                    # Show a preview
-                    preview = parsed_content['full_text'][:300] + "..." if len(parsed_content['full_text']) > 300 else parsed_content['full_text']
-                    print(f"  - Text preview: {preview}")
-                    
-                else:
-                    print(f"✗ Failed to parse XML: {parsed_content.get('error', 'Unknown error')}")
-                    verslag['summary_ready'] = False
-            else:
-                print("✗ No content to parse")
-                verslag['summary_ready'] = False
-            
-            processed_verslagen.append(verslag)
-        
-        # Save processed results
-        with open('verslagen_parsed.json', 'w', encoding='utf-8') as f:
-            json.dump(processed_verslagen, f, ensure_ascii=False, indent=2)
-        
-        # Summary
-        successful = sum(1 for v in processed_verslagen if v.get('summary_ready', False))
-        print(f"\n=== Processing Complete ===")
-        print(f"Successfully parsed: {successful}/{len(processed_verslagen)} documents")
-        print(f"Saved results to: verslagen_parsed.json")
-        
-        if successful > 0:
-            print(f"\n🎉 Ready for AI summarization!")
-            print(f"You now have {successful} parliamentary meeting transcripts with clean, readable text.")
-            print(f"Next step: Set up LLM integration for summarization!")
-            
-            # Show one example of the structure
-            example = next((v for v in processed_verslagen if v.get('summary_ready')), None)
-            if example:
-                print(f"\nExample structure:")
-                print(f"- Meeting: {example.get('vergadering_titel')}")
-                print(f"- Date: {example.get('vergadering_datum')}")
-                print(f"- Text length: {len(example.get('readable_text', ''))} characters")
-                if example.get('parsed_content', {}).get('vergadering_info'):
-                    print(f"- Meeting details: {example['parsed_content']['vergadering_info']}")
-        
     except FileNotFoundError:
-        print("No verslagen_with_content.json found. Please run document_processor.py first.")
-    except Exception as e:
-        print(f"Error: {e}")
-        import traceback
-        traceback.print_exc()
+        print("No verslagen_with_content.json found. Run document_processor.py first.")
+        return
+
+    parser = VLOSDocumentParser()
+    processed = []
+
+    for i, verslag in enumerate(verslagen, 1):
+        title = verslag.get("vergadering_titel", "Unknown")
+        print(f"\n--- {i}/{len(verslagen)}: {title} ---")
+
+        if not (verslag.get("content_extracted") and verslag.get("document_text")):
+            print("  No content to parse")
+            verslag["summary_ready"] = False
+            processed.append(verslag)
+            continue
+
+        parsed = parser.parse_document(verslag["document_text"])
+
+        if parsed.get("parsed_successfully"):
+            verslag["parsed_content"] = parsed
+            verslag["readable_text"] = parsed["full_text"]
+            verslag["summary_ready"] = True
+            print(
+                f"  Parsed: {parsed['text_length']:,} chars, "
+                f"{parsed['num_agendapunten']} agenda items, "
+                f"{parsed['num_sprekers']} speakers"
+            )
+        else:
+            print(f"  Failed: {parsed.get('error', 'unknown error')}")
+            verslag["summary_ready"] = False
+
+        processed.append(verslag)
+
+    with open("verslagen_parsed.json", "w", encoding="utf-8") as f:
+        json.dump(processed, f, ensure_ascii=False, indent=2)
+
+    successful = sum(1 for v in processed if v.get("summary_ready"))
+    print(f"\n=== Done: {successful}/{len(processed)} ready for summarization ===")
+    print("Saved to verslagen_parsed.json")
+
 
 if __name__ == "__main__":
     process_verslagen_with_xml_parsing()
