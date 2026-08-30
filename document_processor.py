@@ -48,62 +48,6 @@ class DocumentProcessor:
             'User-Agent': 'TK-Summary-Bot/1.0'
         })
     
-    def explore_verslag_structure(self, verslag_id: str):
-        """Explore the structure of a verslag to understand how to access documents"""
-        try:
-            # Get all verslagen and find the one we want
-            verslagen = self.api.get_verslagen(max_items=100)
-            verslag = None
-            
-            for v in verslagen:
-                if v.id == verslag_id:
-                    verslag = v
-                    break
-            
-            if not verslag:
-                print(f"Could not find verslag with ID {verslag_id}")
-                return None
-            
-            print(f"Exploring verslag structure:")
-            print(f"  - ID: {verslag.id}")
-            print(f"  - Available attributes: {[attr for attr in dir(verslag) if not attr.startswith('_')]}")
-            
-            # Try different ways to access document content
-            methods_to_try = [
-                'get_resource_url_or_none',
-                'url',
-                'resource_url'
-            ]
-            
-            for method in methods_to_try:
-                if hasattr(verslag, method):
-                    try:
-                        result = getattr(verslag, method)
-                        if callable(result):
-                            result = result()
-                        print(f"  - {method}: {result}")
-                    except Exception as e:
-                        print(f"  - {method}: Error - {e}")
-            
-            # Try to get related documents
-            if hasattr(verslag, 'related_items'):
-                try:
-                    documents = verslag.related_items('Document')
-                    print(f"  - Related documents: {len(documents) if documents else 0}")
-                    if documents:
-                        doc = documents[0]
-                        print(f"    - Document attributes: {[attr for attr in dir(doc) if not attr.startswith('_')]}")
-                        if hasattr(doc, 'get_resource_url_or_none'):
-                            print(f"    - Document URL: {doc.get_resource_url_or_none()}")
-                except Exception as e:
-                    print(f"  - Related documents error: {e}")
-            
-            return verslag
-            
-        except Exception as e:
-            print(f"Error exploring verslag structure: {e}")
-            return None
-
     def get_document_content(self, verslag_id: str) -> Optional[bytes]:
         """
         Download the raw document content for a verslag.

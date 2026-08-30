@@ -24,7 +24,7 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -38,6 +38,9 @@ MODEL = os.getenv("KAMERHELDER_MODEL", "claude-sonnet-5")
 EFFORT = os.getenv("KAMERHELDER_EFFORT", "high")
 MAX_SEARCHES = int(os.getenv("KAMERHELDER_MAX_SEARCHES", "12"))
 MAX_TOKENS = 32000
+
+# Batches expire after 24h; past this a pending batch is stuck, not slow.
+STALE_BATCH_HOURS = 26
 
 # Fact-checking is only meaningful against authoritative sources. Restricting the
 # search keeps a flagged claim traceable to an official document and caps how far
@@ -409,6 +412,16 @@ def submit_batch(client, pending: List[Dict]) -> None:
     print(f"State written to {BATCH_STATE}. Collect it with --mode collect.")
 
 
+def batch_age_hours(submitted: str, now: Optional[datetime] = None) -> float:
+    now = now or datetime.now(timezone.utc)
+    return (now - datetime.fromisoformat(submitted)).total_seconds() / 3600
+
+
+def batch_is_stale(submitted: str, now: Optional[datetime] = None) -> bool:
+    """A batch still pending well past its 24-hour cap is stuck, not slow."""
+    return batch_age_hours(submitted, now) > STALE_BATCH_HOURS
+
+
 def collect_batch(client) -> None:
     if not BATCH_STATE.exists():
         print("No pending batch. Nothing to collect.")
@@ -425,6 +438,20 @@ def collect_batch(client) -> None:
             f"({counts.processing} processing, {counts.succeeded} done). "
             "Leaving state in place; try again later."
         )
+
+        # A batch is capped at 24 hours, so one still pending well past that is
+        # stuck, not slow. Say so loudly: the nightly run would otherwise skip
+        # submission every night in silence and the site would quietly freeze.
+        if batch_is_stale(state["submitted"]):
+            hours = batch_age_hours(state["submitted"])
+            print(
+                f"\nERROR: this batch was submitted {hours:.0f} hours ago and has "
+                f"not finished. Batches expire after 24 hours, so it will not "
+                f"complete. Delete {BATCH_STATE} to let the next run queue the "
+                "work again.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
         return
 
     # Transcripts are only needed to continue a paused turn, which is rare, so

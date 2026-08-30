@@ -8,6 +8,7 @@ No API calls are made; responses are stubbed.
 
 import json
 import os
+from datetime import datetime, timedelta, timezone
 import pathlib
 import shutil
 import tempfile
@@ -304,6 +305,34 @@ class TestVersionPreference(unittest.TestCase):
         # Order must not decide the outcome.
         kept_reversed = retriever._deduplicate_verslagen(list(reversed(group)))
         self.assertEqual([v["id"] for v in kept_reversed], ["corrected"])
+
+
+class TestBatchStaleness(unittest.TestCase):
+    """
+    The nightly run skips submission while a batch is pending. If a batch never
+    finishes, that skip is correct but silent, and the site quietly stops
+    updating — so a batch past its 24-hour cap has to be reported as an error.
+    """
+
+    def setUp(self):
+        self.now = datetime(2026, 8, 30, 12, 0, tzinfo=timezone.utc)
+
+    def submitted(self, hours_ago):
+        return (self.now - timedelta(hours=hours_ago)).isoformat()
+
+    def test_a_fresh_batch_is_not_stale(self):
+        self.assertFalse(summarizer.batch_is_stale(self.submitted(2), self.now))
+
+    def test_a_batch_within_the_cap_is_not_stale(self):
+        self.assertFalse(summarizer.batch_is_stale(self.submitted(23), self.now))
+
+    def test_a_batch_past_the_cap_is_stale(self):
+        self.assertTrue(summarizer.batch_is_stale(self.submitted(30), self.now))
+
+    def test_age_is_reported_in_hours(self):
+        self.assertAlmostEqual(
+            summarizer.batch_age_hours(self.submitted(5), self.now), 5.0
+        )
 
 
 class TestSummaryStore(unittest.TestCase):

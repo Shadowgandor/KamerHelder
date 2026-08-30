@@ -197,45 +197,6 @@ export class SummaryService {
   }
 
   /**
-   * Create a helper method to manually load specific files if auto-discovery fails
-   */
-  public async loadSpecificFiles(filenames: string[]): Promise<void> {
-    this.loadingSubject.next(true);
-    this.errorSubject.next(null);
-
-    try {
-      const fileInfos = this.parseFileNames(filenames);
-      const loadRequests = fileInfos.map(fileInfo => this.loadSingleSummaryFile(fileInfo));
-      
-      const results = await forkJoin(loadRequests).toPromise();
-      const validDocuments = results?.filter(doc => doc !== null) as ParliamentaryDocument[];
-
-      if (validDocuments && validDocuments.length > 0) {
-        const currentDocuments = this.documentsSubject.value;
-        const allDocuments = [...currentDocuments, ...validDocuments];
-        
-        // Remove duplicates based on ID
-        const uniqueDocuments = allDocuments.filter((doc, index, arr) => 
-          arr.findIndex(d => d.id === doc.id) === index
-        );
-        
-        // Sort by date
-        uniqueDocuments.sort((a, b) => b.date.getTime() - a.date.getTime());
-        
-        this.documentsSubject.next(uniqueDocuments);
-        this.initializeEnhancedFilters(uniqueDocuments);
-        
-        console.log(`Successfully loaded ${validDocuments.length} additional documents`);
-      }
-    } catch (error) {
-      console.error('Error loading specific files:', error);
-      this.errorSubject.next('Failed to load some files');
-    } finally {
-      this.loadingSubject.next(false);
-    }
-  }
-
-  /**
    * Create manifest.json helper method
    * Call this method to generate a manifest of your files
    */
@@ -416,60 +377,6 @@ export class SummaryService {
   updateSearchFilter(searchFilter: Partial<SearchFilter>): void {
     const currentFilter = this.searchFilterSubject.value;
     this.searchFilterSubject.next({ ...currentFilter, ...searchFilter });
-  }
-
-  // Legacy method - kept for backward compatibility
-  async loadEnhancedSummaryFile(filename: string): Promise<void> {
-    await this.loadSpecificFiles([filename]);
-  }
-
-  // Method to load multiple summary files
-  async loadMultipleSummaryFiles(filenames: string[]): Promise<void> {
-    await this.loadSpecificFiles(filenames);
-  }
-
-  getDocumentById(id: string): Observable<ParliamentaryDocument | undefined> {
-    return this.documents$.pipe(
-      map(documents => documents.find(doc => doc.id === id))
-    );
-  }
-
-  // Enhanced utility methods
-  getTopicsByParty(partyName: string): Observable<EnhancedTopic[]> {
-    return this.documents$.pipe(
-      map(documents => {
-        const topics: EnhancedTopic[] = [];
-        documents.forEach(doc => {
-          doc.summary.main_topics.forEach(topic => {
-            const speaks = normalizePartyPositions(topic.party_positions).some(
-              ({ party }) => party === partyName
-            );
-            if (speaks) {
-              topics.push(topic);
-            }
-          });
-        });
-        return topics;
-      })
-    );
-  }
-
-  getPartiesByTopic(topicName: string): Observable<string[]> {
-    return this.documents$.pipe(
-      map(documents => {
-        const parties = new Set<string>();
-        documents.forEach(doc => {
-          doc.summary.main_topics.forEach(topic => {
-            if (topic.topic === topicName) {
-              normalizePartyPositions(topic.party_positions).forEach(({ party }) => {
-                parties.add(party);
-              });
-            }
-          });
-        });
-        return Array.from(parties);
-      })
-    );
   }
 
   // Method to refresh/reload all files

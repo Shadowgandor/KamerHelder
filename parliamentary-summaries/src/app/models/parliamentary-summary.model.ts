@@ -168,68 +168,8 @@ export interface ProcessedPartyPosition {
   evidence: string | null;
 }
 
-// Search options interface
-export interface SearchOptions {
-  includeContext: boolean;
-  includeReasoning: boolean;
-  includeProposals: boolean;
-}
-
-// Additional utility types
-export type FilterType = 'topic' | 'party' | 'search';
-
-export interface FilterState {
-  topics: TopicFilter[];
-  parties: PartyFilter[];
-  search: SearchFilter;
-}
-
-// Virtual scrolling configuration
-export interface VirtualScrollConfig {
-  itemSize: number;
-  minBufferPx: number;
-  maxBufferPx: number;
-}
-
-// Performance monitoring
-export interface PerformanceMetrics {
-  documentLoadTime: number;
-  preprocessingTime: number;
-  renderTime: number;
-  lastUpdate: Date;
-}
-
-// State management helpers
-export interface AppState {
-  documents: ProcessedDocument[];
-  selectedDocumentId: string | null;
-  filters: FilterState;
-  displayOptions: SummaryDisplayOptions;
-  performance: PerformanceMetrics;
-}
-
-// Event interfaces for component communication
-export interface DocumentSelectedEvent {
-  documentId: string;
-  document: ProcessedDocument;
-}
-
-export interface FilterChangedEvent {
-  filterType: FilterType;
-  filterName: string;
-  value: boolean | string;
-}
-
-export interface DisplayOptionChangedEvent {
-  option: keyof TopicDisplayMode;
-  value: boolean;
-}
-
-// Utility type for party colors
-export type PartyColorMap = { [party: string]: string };
-
 // Constants
-export const DEFAULT_PARTY_COLORS: PartyColorMap = {
+export const DEFAULT_PARTY_COLORS: { [party: string]: string } = {
   'VVD': '#0066CC',
   'PvdA': '#CC0000',
   'GroenLinks-PvdA': '#00AA00',
@@ -245,34 +185,25 @@ export const DEFAULT_PARTY_COLORS: PartyColorMap = {
   'Voorzitter': '#999999'
 };
 
-export const DEFAULT_VIRTUAL_SCROLL_CONFIG: VirtualScrollConfig = {
-  itemSize: 200,
-  minBufferPx: 900,
-  maxBufferPx: 1350
-};
+function hasTopicContext(topic: EnhancedTopic): boolean {
+  return !!(topic.context?.why_discussed ||
+            topic.context?.background ||
+            topic.context?.stakes ||
+            topic.context?.trigger);
+}
 
-export const DEFAULT_DISPLAY_OPTIONS: SummaryDisplayOptions = {
-  topicMode: {
-    showContext: true,
-    showSpecificProposals: true,
-    showReasoning: true,
-    showEvidence: true
-  },
-  expandedTopics: new Set<string>(),
-  showAllParties: true,
-  groupByTopic: true
-};
-
-// Type guards
-export function isEnhancedPartyPosition(position: EnhancedPartyPosition | string): position is EnhancedPartyPosition {
+function isEnhancedPartyPosition(
+  position: EnhancedPartyPosition | string
+): position is EnhancedPartyPosition {
   return typeof position === 'object' && 'position' in position;
 }
 
-export function hasTopicContext(topic: EnhancedTopic): boolean {
-  return !!(topic.context?.why_discussed || 
-           topic.context?.background || 
-           topic.context?.stakes ||
-           topic.context?.trigger);
+function createProcessedTopic(topic: EnhancedTopic): ProcessedTopic {
+  return {
+    ...topic,
+    hasContext: hasTopicContext(topic),
+    partyPositionsArray: normalizePartyPositions(topic.party_positions)
+  };
 }
 
 // Utility functions for data transformation
@@ -295,14 +226,6 @@ export function createProcessedDocument(doc: ParliamentaryDocument, formatDate: 
       ...doc.summary,
       main_topics: doc.summary.main_topics.map(topic => createProcessedTopic(topic))
     }
-  };
-}
-
-export function createProcessedTopic(topic: EnhancedTopic): ProcessedTopic {
-  return {
-    ...topic,
-    hasContext: hasTopicContext(topic),
-    partyPositionsArray: normalizePartyPositions(topic.party_positions)
   };
 }
 
