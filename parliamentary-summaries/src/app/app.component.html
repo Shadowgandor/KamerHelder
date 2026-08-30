@@ -3,12 +3,16 @@
     <mat-icon class="toolbar-icon">account_balance</mat-icon>
     <span class="toolbar-title">KamerHelder</span>
     <span class="toolbar-spacer"></span>
-    <span *ngIf="documentStats$ | async as stats" class="toolbar-stats">
-      {{ stats.totalDocuments }} vergaderingen &middot; {{ stats.totalTopics }} onderwerpen
-    </span>
+    @if (documentStats$ | async; as stats) {
+      <span class="toolbar-stats">
+        {{ stats.totalDocuments }} vergaderingen &middot; {{ stats.totalTopics }} onderwerpen
+      </span>
+    }
   </mat-toolbar>
 
-  <mat-progress-bar *ngIf="loading$ | async" mode="indeterminate" color="accent"></mat-progress-bar>
+  @if (loading$ | async) {
+    <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
+  }
 
   <div class="workspace">
     <!-- Left panel: search + document list -->
@@ -17,195 +21,242 @@
         <mat-form-field appearance="outline" class="search-field">
           <mat-label>Zoeken...</mat-label>
           <input matInput
-                 [ngModel]="searchQuery"
-                 (ngModelChange)="onSearchChangeDebounced($event)">
+            [ngModel]="searchQuery"
+            (ngModelChange)="onSearchChangeDebounced($event)">
           <mat-icon matSuffix>search</mat-icon>
         </mat-form-field>
       </div>
 
       <!-- Loading state -->
-      <div *ngIf="loading$ | async" class="list-loading">
-        <mat-spinner diameter="32"></mat-spinner>
-        <span>Documenten laden...</span>
-      </div>
+      @if (loading$ | async) {
+        <div class="list-loading">
+          <mat-spinner diameter="32"></mat-spinner>
+          <span>Documenten laden...</span>
+        </div>
+      }
 
       <!-- Error state -->
-      <div *ngIf="error$ | async as error" class="list-error">
-        <mat-icon color="warn">error_outline</mat-icon>
-        <span>{{ error }}</span>
-        <button mat-button color="primary" (click)="onRefreshDocuments()">Opnieuw</button>
-      </div>
+      @if (error$ | async; as error) {
+        <div class="list-error">
+          <mat-icon color="warn">error_outline</mat-icon>
+          <span>{{ error }}</span>
+          <button mat-button color="primary" (click)="onRefreshDocuments()">Opnieuw</button>
+        </div>
+      }
 
       <!-- Document list -->
-      <div class="document-list" *ngIf="!(loading$ | async)">
-        <div *ngIf="documents$ | async as documents">
-          <div *ngIf="documents.length === 0" class="empty-list">
-            <mat-icon>inbox</mat-icon>
-            <p>Geen documenten gevonden</p>
-          </div>
-
-          <div
-            *ngFor="let document of documents; trackBy: trackByDocumentId"
-            class="list-item"
-            [class.active]="selectedDocumentId === document.id"
-            (click)="onDocumentSelected(document)"
-            matRipple>
-            <div class="list-item-date">{{ document.formattedDate }}</div>
-            <div class="list-item-title">{{ document.title }}</div>
-            <div class="list-item-meta">
-              <span><mat-icon>topic</mat-icon>{{ document.topicCount }}</span>
-              <span><mat-icon>check_circle</mat-icon>{{ document.decisionCount }}</span>
-              <span *ngIf="document.hasFactChecks" [matTooltip]="document.factCheckCount + ' feitencheck(s)'">
-                <mat-icon>fact_check</mat-icon>{{ document.factCheckCount }}
-              </span>
-              <span class="list-item-model">{{ document.summary.processing_info.ai_model || 'AI' }}</span>
+      @if (!(loading$ | async)) {
+        <div class="document-list">
+          @if (documents$ | async; as documents) {
+            <div>
+              @if (documents.length === 0) {
+                <div class="empty-list">
+                  <mat-icon>inbox</mat-icon>
+                  <p>Geen documenten gevonden</p>
+                </div>
+              }
+              @for (document of documents; track document.id) {
+                <div
+                  class="list-item"
+                  [class.active]="selectedDocumentId === document.id"
+                  (click)="onDocumentSelected(document)"
+                  matRipple>
+                  <div class="list-item-date">{{ document.formattedDate }}</div>
+                  <div class="list-item-title">{{ document.title }}</div>
+                  <div class="list-item-meta">
+                    <span><mat-icon>topic</mat-icon>{{ document.topicCount }}</span>
+                    <span><mat-icon>check_circle</mat-icon>{{ document.decisionCount }}</span>
+                    @if (document.hasFactChecks) {
+                      <span [matTooltip]="document.factCheckCount + ' feitencheck(s)'">
+                        <mat-icon>fact_check</mat-icon>{{ document.factCheckCount }}
+                      </span>
+                    }
+                    <span class="list-item-model">{{ document.summary.processing_info.ai_model || 'AI' }}</span>
+                  </div>
+                </div>
+              }
             </div>
-          </div>
+          }
         </div>
-      </div>
+      }
     </div>
 
     <!-- Right panel: document detail -->
     <div class="detail-panel">
-      <div *ngIf="!(selectedDocument$ | async)" class="detail-empty">
-        <mat-icon>article</mat-icon>
-        <p>Selecteer een vergadering om de samenvatting te bekijken</p>
-      </div>
-
-      <div *ngIf="selectedDocument$ | async as doc" class="detail-content">
-        <!-- Header -->
-        <div class="detail-header">
-          <h1 class="detail-title">{{ doc.title }}</h1>
-          <div class="detail-subtitle">{{ doc.formattedDate }}</div>
+      @if (!(selectedDocument$ | async)) {
+        <div class="detail-empty">
+          <mat-icon>article</mat-icon>
+          <p>Selecteer een vergadering om de samenvatting te bekijken</p>
         </div>
+      }
 
-        <!-- Executive Summary -->
-        <section class="detail-section">
-          <h2><mat-icon>summarize</mat-icon> Samenvatting</h2>
-          <p class="executive-summary">{{ doc.summary.executive_summary }}</p>
-        </section>
-
-        <!-- Political Dynamics -->
-        <section *ngIf="doc.summary.political_dynamics" class="detail-section dynamics-section">
-          <h2><mat-icon>balance</mat-icon> Politieke dynamiek</h2>
-          <p>{{ doc.summary.political_dynamics }}</p>
-        </section>
-
-        <!-- Topics -->
-        <section class="detail-section">
-          <h2><mat-icon>topic</mat-icon> Hoofdonderwerpen ({{ doc.summary.main_topics.length }})</h2>
-          <mat-accordion multi>
-            <mat-expansion-panel
-              *ngFor="let topic of doc.summary.main_topics; trackBy: trackByTopicName"
-              class="topic-panel">
-              <mat-expansion-panel-header>
-                <mat-panel-title>{{ topic.topic }}</mat-panel-title>
-              </mat-expansion-panel-header>
-
-              <!-- Context -->
-              <div *ngIf="topic.hasContext" class="topic-context">
-                <div *ngIf="topic.context?.why_discussed" class="context-item">
-                  <strong>Aanleiding</strong>
-                  <p>{{ topic.context?.why_discussed }}</p>
-                </div>
-                <div *ngIf="topic.context?.background" class="context-item">
-                  <strong>Achtergrond</strong>
-                  <p>{{ topic.context?.background }}</p>
-                </div>
-                <div *ngIf="topic.context?.stakes" class="context-item">
-                  <strong>Belang</strong>
-                  <p>{{ topic.context?.stakes }}</p>
-                </div>
-              </div>
-
-              <p class="topic-summary-text">{{ topic.summary }}</p>
-
-              <!-- Party positions -->
-              <div class="party-positions" *ngIf="topic.partyPositionsArray?.length">
-                <h4>Fracties</h4>
-                <div class="positions-grid">
-                  <div
-                    *ngFor="let pos of topic.partyPositionsArray; trackBy: trackByPartyName"
-                    class="position-card">
-                    <div class="party-badge" [style.background-color]="pos.color">{{ pos.party }}</div>
-                    <p class="main-position">{{ pos.mainPosition }}</p>
-                    <div *ngIf="pos.reasoning" class="pos-detail reasoning-text">{{ pos.reasoning }}</div>
-                    <div *ngIf="pos.evidence" class="pos-detail evidence-text">{{ pos.evidence }}</div>
-                    <div *ngIf="pos.hasProposals" class="proposals">
-                      <span *ngFor="let p of pos.proposals; trackBy: trackByIndex" class="proposal-chip">{{ p }}</span>
+      @if (selectedDocument$ | async; as doc) {
+        <div class="detail-content">
+          <!-- Header -->
+          <div class="detail-header">
+            <h1 class="detail-title">{{ doc.title }}</h1>
+            <div class="detail-subtitle">{{ doc.formattedDate }}</div>
+          </div>
+          <!-- Executive Summary -->
+          <section class="detail-section">
+            <h2><mat-icon>summarize</mat-icon> Samenvatting</h2>
+            <p class="executive-summary">{{ doc.summary.executive_summary }}</p>
+          </section>
+          <!-- Political Dynamics -->
+          @if (doc.summary.political_dynamics) {
+            <section class="detail-section dynamics-section">
+              <h2><mat-icon>balance</mat-icon> Politieke dynamiek</h2>
+              <p>{{ doc.summary.political_dynamics }}</p>
+            </section>
+          }
+          <!-- Topics -->
+          <section class="detail-section">
+            <h2><mat-icon>topic</mat-icon> Hoofdonderwerpen ({{ doc.summary.main_topics.length }})</h2>
+            <mat-accordion multi>
+              @for (topic of doc.summary.main_topics; track topic.topic) {
+                <mat-expansion-panel
+                  class="topic-panel">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>{{ topic.topic }}</mat-panel-title>
+                  </mat-expansion-panel-header>
+                  <!-- Context -->
+                  @if (topic.hasContext) {
+                    <div class="topic-context">
+                      @if (topic.context?.why_discussed) {
+                        <div class="context-item">
+                          <strong>Aanleiding</strong>
+                          <p>{{ topic.context?.why_discussed }}</p>
+                        </div>
+                      }
+                      @if (topic.context?.background) {
+                        <div class="context-item">
+                          <strong>Achtergrond</strong>
+                          <p>{{ topic.context?.background }}</p>
+                        </div>
+                      }
+                      @if (topic.context?.stakes) {
+                        <div class="context-item">
+                          <strong>Belang</strong>
+                          <p>{{ topic.context?.stakes }}</p>
+                        </div>
+                      }
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Outcome -->
-              <div *ngIf="topic.outcome" class="outcome">
-                <mat-icon>assignment_turned_in</mat-icon>
-                <p>{{ topic.outcome }}</p>
-              </div>
-            </mat-expansion-panel>
-          </mat-accordion>
-        </section>
-
-        <!-- Key Decisions -->
-        <section *ngIf="doc.hasDecisions" class="detail-section">
-          <h2><mat-icon>check_circle</mat-icon> Besluiten ({{ doc.summary.key_decisions.length }})</h2>
-          <ul class="decisions-list">
-            <li *ngFor="let d of doc.summary.key_decisions; trackBy: trackByIndex">{{ d }}</li>
-          </ul>
-        </section>
-
-        <!-- Next Steps -->
-        <section *ngIf="doc.hasNextSteps" class="detail-section">
-          <h2><mat-icon>schedule</mat-icon> Vervolgstappen ({{ doc.summary.next_steps.length }})</h2>
-          <ul class="decisions-list">
-            <li *ngFor="let s of doc.summary.next_steps; trackBy: trackByIndex">{{ s }}</li>
-          </ul>
-        </section>
-
-        <!-- Fact checks -->
-        <section *ngIf="doc.hasFactChecks" class="detail-section">
-          <h2><mat-icon>fact_check</mat-icon> Feitencheck ({{ doc.factCheckCount }})</h2>
-          <p class="factcheck-intro">
-            Verifieerbare beweringen uit dit debat, gecontroleerd tegen officiële bronnen.
-          </p>
-          <div class="factcheck-list">
-            <div
-              *ngFor="let fc of doc.summary.fact_checks; trackBy: trackByIndex"
-              class="factcheck-card"
-              [class]="'assessment-' + fc.assessment">
-              <div class="factcheck-head">
-                <span class="assessment-badge">{{ assessmentLabel(fc.assessment) }}</span>
-                <span class="factcheck-speaker">{{ fc.speaker }}</span>
-              </div>
-              <blockquote class="factcheck-claim">{{ fc.claim }}</blockquote>
-              <p class="factcheck-explanation">{{ fc.explanation }}</p>
-              <p *ngIf="fc.correction" class="factcheck-correction">
-                <strong>Correctie:</strong> {{ fc.correction }}
+                  }
+                  <p class="topic-summary-text">{{ topic.summary }}</p>
+                  <!-- Party positions -->
+                  @if (topic.partyPositionsArray?.length) {
+                    <div class="party-positions">
+                      <h4>Fracties</h4>
+                      <div class="positions-grid">
+                        @for (pos of topic.partyPositionsArray; track pos.party) {
+                          <div
+                            class="position-card">
+                            <div class="party-badge" [style.background-color]="pos.color">{{ pos.party }}</div>
+                            <p class="main-position">{{ pos.mainPosition }}</p>
+                            @if (pos.reasoning) {
+                              <div class="pos-detail reasoning-text">{{ pos.reasoning }}</div>
+                            }
+                            @if (pos.evidence) {
+                              <div class="pos-detail evidence-text">{{ pos.evidence }}</div>
+                            }
+                            @if (pos.hasProposals) {
+                              <div class="proposals">
+                                @for (p of pos.proposals; track $index) {
+                                  <span class="proposal-chip">{{ p }}</span>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                  <!-- Outcome -->
+                  @if (topic.outcome) {
+                    <div class="outcome">
+                      <mat-icon>assignment_turned_in</mat-icon>
+                      <p>{{ topic.outcome }}</p>
+                    </div>
+                  }
+                </mat-expansion-panel>
+              }
+            </mat-accordion>
+          </section>
+          <!-- Key Decisions -->
+          @if (doc.hasDecisions) {
+            <section class="detail-section">
+              <h2><mat-icon>check_circle</mat-icon> Besluiten ({{ doc.summary.key_decisions.length }})</h2>
+              <ul class="decisions-list">
+                @for (d of doc.summary.key_decisions; track $index) {
+                  <li>{{ d }}</li>
+                }
+              </ul>
+            </section>
+          }
+          <!-- Next Steps -->
+          @if (doc.hasNextSteps) {
+            <section class="detail-section">
+              <h2><mat-icon>schedule</mat-icon> Vervolgstappen ({{ doc.summary.next_steps.length }})</h2>
+              <ul class="decisions-list">
+                @for (s of doc.summary.next_steps; track $index) {
+                  <li>{{ s }}</li>
+                }
+              </ul>
+            </section>
+          }
+          <!-- Fact checks -->
+          @if (doc.hasFactChecks) {
+            <section class="detail-section">
+              <h2><mat-icon>fact_check</mat-icon> Feitencheck ({{ doc.factCheckCount }})</h2>
+              <p class="factcheck-intro">
+                Verifieerbare beweringen uit dit debat, gecontroleerd tegen officiële bronnen.
               </p>
-              <div *ngIf="fc.sources?.length" class="factcheck-sources">
-                <span>Bronnen:</span>
-                <a
-                  *ngFor="let src of fc.sources; trackBy: trackByIndex"
-                  [href]="src"
-                  target="_blank"
-                  rel="noopener noreferrer">{{ sourceLabel(src) }}</a>
+              <div class="factcheck-list">
+                @for (fc of doc.summary.fact_checks; track $index) {
+                  <div
+                    class="factcheck-card"
+                    [class]="'assessment-' + fc.assessment">
+                    <div class="factcheck-head">
+                      <span class="assessment-badge">{{ assessmentLabel(fc.assessment) }}</span>
+                      <span class="factcheck-speaker">{{ fc.speaker }}</span>
+                    </div>
+                    <blockquote class="factcheck-claim">{{ fc.claim }}</blockquote>
+                    <p class="factcheck-explanation">{{ fc.explanation }}</p>
+                    @if (fc.correction) {
+                      <p class="factcheck-correction">
+                        <strong>Correctie:</strong> {{ fc.correction }}
+                      </p>
+                    }
+                    @if (fc.sources?.length) {
+                      <div class="factcheck-sources">
+                        <span>Bronnen:</span>
+                        @for (src of fc.sources; track $index) {
+                          <a
+                            [href]="src"
+                            target="_blank"
+                          rel="noopener noreferrer">{{ sourceLabel(src) }}</a>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
               </div>
+            </section>
+          }
+          <!-- Processing info -->
+          <section class="detail-section processing-section">
+            <div class="processing-chips">
+              <span class="proc-chip">{{ doc.summary.processing_info.ai_model || 'AI' }}</span>
+              <span class="proc-chip">{{ doc.processingDate }}</span>
+              @if (doc.summary.processing_info.web_searches) {
+                <span class="proc-chip">
+                  {{ doc.summary.processing_info.web_searches }} bronnen geraadpleegd
+                </span>
+              }
             </div>
-          </div>
-        </section>
-
-        <!-- Processing info -->
-        <section class="detail-section processing-section">
-          <div class="processing-chips">
-            <span class="proc-chip">{{ doc.summary.processing_info.ai_model || 'AI' }}</span>
-            <span class="proc-chip">{{ doc.processingDate }}</span>
-            <span *ngIf="doc.summary.processing_info.web_searches" class="proc-chip">
-              {{ doc.summary.processing_info.web_searches }} bronnen geraadpleegd
-            </span>
-          </div>
-        </section>
-      </div>
+          </section>
+        </div>
+      }
     </div>
   </div>
 </div>

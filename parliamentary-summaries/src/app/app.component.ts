@@ -1,6 +1,6 @@
 // src/app/app.component.ts - Updated with loading states
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable, Subject, BehaviorSubject, combineLatest } from 'rxjs';
@@ -35,39 +35,37 @@ import {
   SummaryDisplayOptions,
   TopicDisplayMode,
   ProcessedDocument,
-  ProcessedPartyPosition,
-  ProcessedTopic,
   FactCheckAssessment,
   normalizePartyPositions
 } from './models/parliamentary-summary.model';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [
-    CommonModule, 
-    FormsModule,
-    MatToolbarModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatChipsModule,
-    MatExpansionModule,
-    MatCheckboxModule,
-    MatInputModule,
-    MatFormFieldModule,
-    MatSidenavModule,
-    MatDividerModule,
-    MatBadgeModule,
-    MatTooltipModule,
-    MatListModule,
-    MatRippleModule,
-    MatProgressSpinnerModule,
-    MatProgressBarModule,
-    MatSnackBarModule
-  ],
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+    selector: 'app-root',
+    imports: [
+        CommonModule,
+        FormsModule,
+        MatToolbarModule,
+        MatCardModule,
+        MatButtonModule,
+        MatIconModule,
+        MatChipsModule,
+        MatExpansionModule,
+        MatCheckboxModule,
+        MatInputModule,
+        MatFormFieldModule,
+        MatSidenavModule,
+        MatDividerModule,
+        MatBadgeModule,
+        MatTooltipModule,
+        MatListModule,
+        MatRippleModule,
+        MatProgressSpinnerModule,
+        MatProgressBarModule,
+        MatSnackBarModule
+    ],
+    templateUrl: './app.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy {
   title = 'Parliamentary Summaries';
@@ -332,25 +330,5 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Optimized trackBy functions
-  trackByDocumentId(index: number, doc: ProcessedDocument): string {
-    return doc.id;
-  }
-
-  trackByTopicName(index: number, topic: ProcessedTopic): string {
-    return topic.topic;
-  }
-
-  trackByPartyName(index: number, position: ProcessedPartyPosition): string {
-    return position.party;
-  }
-
-  trackByFilterName(index: number, filter: TopicFilter | PartyFilter): string {
-    return filter.name;
-  }
-
-  trackByIndex(index: number): number {
-    return index;
-  }
 
 }
